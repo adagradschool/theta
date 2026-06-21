@@ -117,8 +117,12 @@ export type {
 	ThetaTransport,
 } from "./model.ts";
 export type {
+	ThetaAppMessage,
 	ThetaAssistantMessage,
 	ThetaBaseMessage,
+	ThetaBashExecutionMessage,
+	ThetaBranchSummaryMessage,
+	ThetaCompactionSummaryMessage,
 	ThetaCustomMessage,
 	ThetaCustomMessages,
 	ThetaImageContent,
@@ -130,6 +134,15 @@ export type {
 	ThetaToolResultMessage,
 	ThetaUsage,
 	ThetaUserMessage,
+} from "./messages.ts";
+export {
+	convertThetaMessageToLlm,
+	convertThetaMessagesToLlm,
+	THETA_BRANCH_SUMMARY_PREFIX,
+	THETA_BRANCH_SUMMARY_SUFFIX,
+	THETA_COMPACTION_SUMMARY_PREFIX,
+	THETA_COMPACTION_SUMMARY_SUFFIX,
+	thetaBashExecutionToText,
 } from "./messages.ts";
 export type { ThetaPackageInfo, ThetaRuntimeTarget } from "./runtime.ts";
 export type {

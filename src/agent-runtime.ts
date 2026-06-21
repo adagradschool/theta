@@ -16,7 +16,6 @@ import type {
 	Api,
 	AssistantMessageEvent,
 	KnownProvider,
-	Message,
 	Model,
 	ProviderEnv,
 	TSchema,
@@ -28,7 +27,11 @@ import type {
 	ThetaAgentRuntimeAdapter,
 } from "./agent.ts";
 import type { ThetaAgentEvent, ThetaAssistantStreamEvent } from "./events.ts";
-import type { ThetaMessage, ThetaToolResultMessage } from "./messages.ts";
+import {
+	convertThetaMessagesToLlm,
+	type ThetaMessage,
+	type ThetaToolResultMessage,
+} from "./messages.ts";
 import type { ThetaModelRef, ThetaThinkingLevel } from "./model.ts";
 import type {
 	ThetaToolDefinition,
@@ -123,7 +126,7 @@ function createRuntimeLoopConfig(
 		model: toRuntimeModel(context.state.model),
 		sessionId: options.sessionId ?? context.agentId,
 		convertToLlm: (messages: AgentMessage[]) =>
-			messages.filter(isRuntimeLlmMessage),
+			convertThetaMessagesToLlm(messages as ThetaMessage[]),
 		getSteeringMessages: async () =>
 			context.drainSteeringMessages().map(toRuntimeMessage),
 		getFollowUpMessages: async () =>
@@ -300,14 +303,6 @@ function toRuntimeMessage(message: ThetaMessage): AgentMessage {
 
 function toThetaMessage(message: AgentMessage): ThetaMessage {
 	return message as ThetaMessage;
-}
-
-function isRuntimeLlmMessage(message: AgentMessage): message is Message {
-	return (
-		message.role === "user" ||
-		message.role === "assistant" ||
-		message.role === "toolResult"
-	);
 }
 
 async function emitThetaEvent(
