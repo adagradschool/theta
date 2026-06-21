@@ -1,3 +1,13 @@
+import {
+	compactThetaSession,
+	DEFAULT_THETA_COMPACTION_SETTINGS,
+	estimateThetaContextTokens,
+	prepareThetaCompaction,
+	shouldCompactThetaContext,
+	type CompactThetaSessionResult,
+	type ThetaCompactionSettings,
+	type ThetaCompactionSummaryFunction,
+} from "./compaction.ts";
 import { ThetaEmitter } from "./emitter.ts";
 import type { ThetaAgentEvent, ThetaEventListener } from "./events.ts";
 import type {
@@ -17,6 +27,7 @@ import {
 	createThetaAgentRuntime,
 	type CreateThetaAgentRuntimeOptions,
 } from "./agent-runtime.ts";
+import type { ThetaSessionManager } from "./sessions/index.ts";
 
 export type ThetaQueueMode = "all" | "one-at-a-time";
 
@@ -69,6 +80,21 @@ export interface ThetaAgentRuntimeAdapter {
 	continue(context: ThetaAgentRunContext): Promise<void>;
 }
 
+export interface ThetaAgentSessionOptions {
+	readonly manager: ThetaSessionManager;
+	readonly sessionId: string;
+	readonly branchId?: string;
+	readonly persistMessages?: boolean;
+}
+
+export interface ThetaAgentCompactionOptions {
+	readonly enabled?: boolean;
+	readonly contextWindow?: number;
+	readonly settings?: ThetaCompactionSettings;
+	readonly complete: ThetaCompactionSummaryFunction;
+	readonly customInstructions?: string;
+}
+
 export interface CreateThetaAgentOptions {
 	readonly id?: string;
 	readonly workspace: ThetaWorkspace;
@@ -79,6 +105,8 @@ export interface CreateThetaAgentOptions {
 	readonly proxy?: ThetaLlmProxyConfig;
 	readonly runtime?: ThetaAgentRuntimeAdapter;
 	readonly runtimeOptions?: CreateThetaAgentRuntimeOptions;
+	readonly session?: ThetaAgentSessionOptions;
+	readonly compaction?: ThetaAgentCompactionOptions;
 	readonly steeringMode?: ThetaQueueMode;
 	readonly followUpMode?: ThetaQueueMode;
 	readonly events?: ThetaEventListener<ThetaAgentEvent>;
@@ -146,11 +174,14 @@ class ThetaAgentController implements ThetaAgent {
 	readonly workspace: ThetaWorkspace;
 	readonly proxy: ThetaLlmProxyConfig | undefined;
 	private readonly runtime: ThetaAgentRuntimeAdapter | undefined;
+	private readonly sessionOptions: ThetaAgentSessionOptions | undefined;
+	private readonly compactionOptions: ThetaAgentCompactionOptions | undefined;
 	private readonly emitter = new ThetaEmitter<ThetaAgentEvent>();
 	private readonly stateValue: MutableThetaAgentState;
 	private readonly steeringQueue: ThetaMessage[][] = [];
 	private readonly followUpQueue: ThetaMessage[][] = [];
 	private activeRun: ActiveRun | undefined;
+	private persistedMessageCount = 0;
 	private disposed = false;
 	steeringMode: ThetaQueueMode;
 	followUpMode: ThetaQueueMode;
@@ -162,6 +193,8 @@ class ThetaAgentController implements ThetaAgent {
 		this.proxy = options.proxy;
 		this.runtime =
 			options.runtime ?? createThetaAgentRuntime(options.runtimeOptions);
+		this.sessionOptions = options.session;
+		this.compactionOptions = options.compaction;
 		this.steeringMode = options.steeringMode ?? "one-at-a-time";
 		this.followUpMode = options.followUpMode ?? "one-at-a-time";
 		this.stateValue = {
@@ -343,6 +376,8 @@ class ThetaAgentController implements ThetaAgent {
 				workspaceId: this.workspace.id,
 			});
 			await executor(this.createRunContext(abortController.signal));
+			await this.persistNewSessionMessages();
+			await this.maybeCompactSession(abortController.signal);
 		} catch (error) {
 			runError = error;
 			this.stateValue.errorMessage =
@@ -379,6 +414,106 @@ class ThetaAgentController implements ThetaAgent {
 		if (runError) {
 			throw runError;
 		}
+	}
+
+	private async persistNewSessionMessages(): Promise<void> {
+		const session = this.sessionOptions;
+		if (!session || session.persistMessages === false) {
+			return;
+		}
+		const messages = this.stateValue.messages.slice(this.persistedMessageCount);
+		for (const message of messages) {
+			await session.manager.appendMessage(session.sessionId, message, {
+				...(session.branchId !== undefined
+					? { branchId: session.branchId }
+					: {}),
+			});
+		}
+		this.persistedMessageCount = this.stateValue.messages.length;
+	}
+
+	private async maybeCompactSession(signal: AbortSignal): Promise<void> {
+		const session = this.sessionOptions;
+		const compaction = this.compactionOptions;
+		if (!session || !compaction || compaction.enabled === false) {
+			return;
+		}
+		const settings = {
+			...DEFAULT_THETA_COMPACTION_SETTINGS,
+			...compaction.settings,
+			enabled: compaction.settings?.enabled ?? true,
+		};
+		if (!settings.enabled) {
+			return;
+		}
+		const contextWindow =
+			compaction.contextWindow ?? this.stateValue.model?.contextWindow;
+		if (contextWindow === undefined) {
+			return;
+		}
+		const restored = await session.manager.restore(
+			session.sessionId,
+			session.branchId,
+		);
+		if (!restored) {
+			return;
+		}
+		const estimate = estimateThetaContextTokens(restored.messages);
+		if (!shouldCompactThetaContext(estimate.tokens, contextWindow, settings)) {
+			return;
+		}
+		const preparation = prepareThetaCompaction(restored, settings);
+		if (!preparation) {
+			return;
+		}
+		await this.emit({
+			type: "compaction_start",
+			agentId: this.id,
+			workspaceId: this.workspace.id,
+			sessionId: session.sessionId,
+			tokens: estimate.tokens,
+		});
+		const result = await compactThetaSession(
+			session.manager,
+			session.sessionId,
+			{
+				settings,
+				complete: compaction.complete,
+				...(session.branchId !== undefined
+					? { branchId: session.branchId }
+					: {}),
+				...(compaction.customInstructions !== undefined
+					? { customInstructions: compaction.customInstructions }
+					: {}),
+				signal,
+			},
+		);
+		if (!result) {
+			return;
+		}
+		await this.applyCompactionResult(session.sessionId, result);
+	}
+
+	private async applyCompactionResult(
+		sessionId: string,
+		result: CompactThetaSessionResult,
+	): Promise<void> {
+		const session = this.sessionOptions;
+		if (!session) {
+			return;
+		}
+		const restored = await session.manager.restore(sessionId, session.branchId);
+		if (restored) {
+			this.stateValue.messages = restored.messages.slice();
+			this.persistedMessageCount = this.stateValue.messages.length;
+		}
+		await this.emit({
+			type: "compaction_end",
+			agentId: this.id,
+			workspaceId: this.workspace.id,
+			sessionId,
+			entry: result.entry,
+		});
 	}
 
 	private createIdlePromise(): { promise: Promise<void>; resolve: () => void } {

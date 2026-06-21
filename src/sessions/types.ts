@@ -8,6 +8,7 @@ export type ThetaSessionEntryKind =
 	| "message"
 	| "modelChange"
 	| "thinkingLevelChange"
+	| "compaction"
 	| "custom";
 
 export interface ThetaSessionRecord {
@@ -57,6 +58,14 @@ export interface ThetaSessionThinkingLevelChangeEntry
 	readonly thinkingLevel: ThetaThinkingLevel;
 }
 
+export interface ThetaSessionCompactionEntry extends ThetaSessionEntryBase {
+	readonly kind: "compaction";
+	readonly summary: string;
+	readonly firstKeptEntryId: string;
+	readonly tokensBefore: number;
+	readonly details?: JsonObject;
+}
+
 export interface ThetaSessionCustomEntry extends ThetaSessionEntryBase {
 	readonly kind: "custom";
 	readonly customType: string;
@@ -68,6 +77,7 @@ export type ThetaSessionEntry =
 	| ThetaSessionMessageEntry
 	| ThetaSessionModelChangeEntry
 	| ThetaSessionThinkingLevelChangeEntry
+	| ThetaSessionCompactionEntry
 	| ThetaSessionCustomEntry;
 
 export interface ThetaSessionSnapshot {
@@ -127,6 +137,14 @@ export interface AppendThetaSessionCustomEntryOptions
 	readonly display?: boolean;
 }
 
+export interface AppendThetaSessionCompactionEntryOptions
+	extends AppendThetaSessionEntryOptions {
+	readonly summary: string;
+	readonly firstKeptEntryId: string;
+	readonly tokensBefore: number;
+	readonly details?: JsonObject;
+}
+
 export interface CreateThetaSessionManagerOptions {
 	readonly store?: ThetaSessionStore;
 	readonly now?: () => number;
@@ -161,6 +179,10 @@ export interface ThetaSessionManager {
 		thinkingLevel: ThetaThinkingLevel,
 		options?: AppendThetaSessionEntryOptions,
 	): Promise<ThetaSessionThinkingLevelChangeEntry>;
+	appendCompactionEntry(
+		sessionId: string,
+		options: AppendThetaSessionCompactionEntryOptions,
+	): Promise<ThetaSessionCompactionEntry>;
 	appendCustomEntry(
 		sessionId: string,
 		options: AppendThetaSessionCustomEntryOptions,

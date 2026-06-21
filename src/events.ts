@@ -5,6 +5,7 @@ import type {
 	ThetaMessage,
 	ThetaToolResultMessage,
 } from "./messages.ts";
+import type { ThetaSessionCompactionEntry } from "./sessions/index.ts";
 import type { ThetaToolResult } from "./tools.ts";
 
 export interface ThetaWorkspaceSnapshot {
@@ -140,6 +141,20 @@ export type ThetaAgentEvent =
 			readonly agentId: string;
 			readonly workspaceId: string;
 			readonly error: Error;
+	  }
+	| {
+			readonly type: "compaction_start";
+			readonly agentId: string;
+			readonly workspaceId: string;
+			readonly sessionId: string;
+			readonly tokens: number;
+	  }
+	| {
+			readonly type: "compaction_end";
+			readonly agentId: string;
+			readonly workspaceId: string;
+			readonly sessionId: string;
+			readonly entry: ThetaSessionCompactionEntry;
 	  };
 
 export type ThetaEvent = ThetaWorkspaceEvent | ThetaAgentEvent;

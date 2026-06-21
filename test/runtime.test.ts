@@ -3,9 +3,12 @@ import { describe, expect, it } from "vitest";
 import {
 	createThetaAgent,
 	createMemoryWorkspaceFs,
+	createThetaSessionManager,
 	createThetaWorkspace,
+	createMemoryThetaSessionStore,
 	THETA_PACKAGE_INFO,
 	type ThetaAgentRuntimeAdapter,
+	type ThetaAgentEvent,
 	type ThetaMessage,
 } from "../src/index.ts";
 
@@ -127,4 +130,98 @@ describe("Theta public API", () => {
 			"Theta agent runtime requires an active model.",
 		);
 	});
+
+	it("persists session messages and automatically compacts after a run", async () => {
+		let assistantIndex = 0;
+		const runtime: ThetaAgentRuntimeAdapter = {
+			async prompt(messages, context) {
+				for (const message of messages) {
+					context.appendMessage(message);
+				}
+				assistantIndex += 1;
+				context.appendMessage({
+					role: "assistant",
+					content: [{ type: "text", text: `assistant ${assistantIndex}` }],
+					provider: "faux",
+					model: "faux-model",
+					usage: {
+						input: 100,
+						output: 20,
+						cacheRead: 0,
+						cacheWrite: 0,
+						totalTokens: 120,
+						cost: {
+							input: 0,
+							output: 0,
+							cacheRead: 0,
+							cacheWrite: 0,
+							total: 0,
+						},
+					},
+					stopReason: "stop",
+					timestamp: Date.now(),
+				});
+			},
+			async continue() {},
+		};
+		const manager = createThetaSessionManager({
+			store: createMemoryThetaSessionStore(),
+			createId: fixedIds(
+				"root",
+				"entry-1",
+				"entry-2",
+				"entry-3",
+				"entry-4",
+				"entry-5",
+			),
+		});
+		const session = await manager.createSession({ id: "session-a" });
+		const events: ThetaAgentEvent[] = [];
+		const agent = createThetaAgent({
+			id: "agent-compact",
+			workspace: createThetaWorkspace({
+				id: "workspace-compact",
+				fs: createMemoryWorkspaceFs(),
+			}),
+			model: { provider: "faux", id: "faux-model", contextWindow: 50 },
+			runtime,
+			session: { manager, sessionId: session.session.id },
+			compaction: {
+				settings: { enabled: true, reserveTokens: 0, keepRecentTokens: 2 },
+				complete: async ({ messages }) => `summary:${messages.length}`,
+			},
+			events: (event) => {
+				events.push(event);
+			},
+		});
+
+		await agent.prompt("first");
+		await agent.prompt("second");
+
+		const restored = await manager.restore(session.session.id);
+		expect(events.map((event) => event.type)).toContain("compaction_start");
+		expect(events.map((event) => event.type)).toContain("compaction_end");
+		expect(restored?.messages.map((message) => message.role)).toEqual([
+			"compactionSummary",
+			"user",
+			"assistant",
+		]);
+		expect(agent.state.messages).toEqual(restored?.messages);
+		expect(restored?.messages[0]).toMatchObject({
+			role: "compactionSummary",
+			summary: "summary:2",
+		});
+	});
 });
+
+function fixedIds(...ids: readonly string[]): () => string {
+	let index = 0;
+	return () => {
+		const id = ids[index];
+		index += 1;
+		if (!id) {
+			throw new Error("Ran out of fixed ids.");
+		}
+		return id;
+	};
+}

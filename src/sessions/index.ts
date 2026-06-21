@@ -2,6 +2,7 @@ export { createThetaSessionManager } from "./manager.ts";
 export { createPGliteThetaSessionStore } from "./pglite-store.ts";
 export { createMemoryThetaSessionStore } from "./store.ts";
 export type {
+	AppendThetaSessionCompactionEntryOptions,
 	AppendThetaSessionCustomEntryOptions,
 	AppendThetaSessionEntryOptions,
 	CreatePGliteThetaSessionStoreOptions,
@@ -10,6 +11,7 @@ export type {
 	ForkThetaSessionBranchOptions,
 	ThetaSessionBranch,
 	ThetaSessionBranchNode,
+	ThetaSessionCompactionEntry,
 	ThetaSessionCustomEntry,
 	ThetaSessionEntry,
 	ThetaSessionEntryBase,

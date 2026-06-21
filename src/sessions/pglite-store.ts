@@ -7,6 +7,7 @@ import type { ThetaModelRef, ThetaThinkingLevel } from "../model.ts";
 import type {
 	CreatePGliteThetaSessionStoreOptions,
 	ThetaSessionBranch,
+	ThetaSessionCompactionEntry,
 	ThetaSessionEntry,
 	ThetaSessionEntryKind,
 	ThetaSessionRecord,
@@ -250,6 +251,18 @@ function rowToEntry(row: EntryRow): ThetaSessionEntry {
 			thinkingLevel: payload.thinkingLevel as ThetaThinkingLevel,
 		};
 	}
+	if (row.kind === "compaction") {
+		return withOptional(
+			{
+				...base,
+				kind: "compaction",
+				summary: String(payload.summary ?? ""),
+				firstKeptEntryId: String(payload.firstKeptEntryId ?? ""),
+				tokensBefore: Number(payload.tokensBefore ?? 0),
+			} satisfies ThetaSessionCompactionEntry,
+			{ details: parsePayloadObject(payload.details) },
+		);
+	}
 	return {
 		...base,
 		kind: "custom",
@@ -310,11 +323,30 @@ function entryPayload(entry: ThetaSessionEntry): JsonObject {
 	if (entry.kind === "thinkingLevelChange") {
 		return { thinkingLevel: entry.thinkingLevel };
 	}
+	if (entry.kind === "compaction") {
+		return {
+			summary: entry.summary,
+			firstKeptEntryId: entry.firstKeptEntryId,
+			tokensBefore: entry.tokensBefore,
+			...(entry.details !== undefined ? { details: entry.details } : {}),
+		};
+	}
 	return {
 		customType: entry.customType,
 		data: entry.data,
 		display: entry.display,
 	};
+}
+
+function parsePayloadObject(
+	value: JsonValue | undefined,
+): JsonObject | undefined {
+	return value !== undefined &&
+		value !== null &&
+		typeof value === "object" &&
+		!Array.isArray(value)
+		? (value as JsonObject)
+		: undefined;
 }
 
 function parseObject(json: string | null): JsonObject | undefined {

@@ -13,6 +13,20 @@ export {
 	syncBlobsToStore,
 } from "./blob-sync.ts";
 export {
+	DEFAULT_THETA_COMPACTION_SETTINGS,
+	THETA_COMPACTION_SYSTEM_PROMPT,
+	calculateThetaContextTokens,
+	compactThetaSession,
+	createThetaCompactionPrompt,
+	estimateThetaContextTokens,
+	estimateThetaMessageTokens,
+	findThetaCompactionCutPoint,
+	generateThetaCompactionSummary,
+	prepareThetaCompaction,
+	serializeThetaConversation,
+	shouldCompactThetaContext,
+} from "./compaction.ts";
+export {
 	decodeWorkspaceText,
 	dirnameWorkspacePath,
 	encodeWorkspaceText,
@@ -69,10 +83,23 @@ export {
 } from "./sessions/index.ts";
 export { createThetaWorkspace } from "./workspace.ts";
 export type {
+	CompactThetaSessionOptions,
+	CompactThetaSessionResult,
+	ThetaCompactionCutPoint,
+	ThetaCompactionPreparation,
+	ThetaCompactionPromptOptions,
+	ThetaCompactionSettings,
+	ThetaCompactionSummaryFunction,
+	ThetaCompactionSummaryRequest,
+	ThetaContextUsageEstimate,
+} from "./compaction.ts";
+export type {
+	ThetaAgentCompactionOptions,
 	CreateThetaAgentOptions,
 	ThetaAgent,
 	ThetaAgentRunContext,
 	ThetaAgentRuntimeAdapter,
+	ThetaAgentSessionOptions,
 	ThetaAgentState,
 	ThetaPromptOptions,
 	ThetaQueueMode,
@@ -202,6 +229,7 @@ export {
 } from "./messages.ts";
 export type { ThetaPackageInfo, ThetaRuntimeTarget } from "./runtime.ts";
 export type {
+	AppendThetaSessionCompactionEntryOptions,
 	AppendThetaSessionCustomEntryOptions,
 	AppendThetaSessionEntryOptions,
 	CreatePGliteThetaSessionStoreOptions,
@@ -210,6 +238,7 @@ export type {
 	ForkThetaSessionBranchOptions,
 	ThetaSessionBranch,
 	ThetaSessionBranchNode,
+	ThetaSessionCompactionEntry,
 	ThetaSessionCustomEntry,
 	ThetaSessionEntry,
 	ThetaSessionEntryBase,

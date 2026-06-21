@@ -166,6 +166,8 @@ Status: implemented with a PGlite metadata/control-plane store, OPFS content-add
 
 ## 14. Compaction
 
+Status: implemented with browser-safe token estimation, threshold helpers, turn-start cut-point selection, summary prompt creation, caller-provided LLM summary generation, durable session compaction entries, PGlite persistence, restore from compaction summaries, manual compaction API, automatic `createThetaAgent` session compaction, and faux-model/unit coverage.
+
 1. Port the browser-safe compaction concepts from Pi.
 2. Define compaction settings.
 3. Implement token estimation.

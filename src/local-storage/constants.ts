@@ -6,7 +6,7 @@ export const THETA_LOCAL_STORAGE_STRATEGY = {
 	durableSync: "postgres-electric",
 } as const;
 
-export const THETA_LOCAL_STORAGE_SCHEMA_VERSION = 2;
+export const THETA_LOCAL_STORAGE_SCHEMA_VERSION = 3;
 
 export const THETA_LOCAL_STORAGE_MIGRATIONS: readonly ThetaStorageMigration[] =
 	[
@@ -93,6 +93,17 @@ on theta_session_branches (session_id, created_at)`,
 on theta_session_entries (session_id, created_at)`,
 				`create index if not exists theta_session_entries_branch_idx
 on theta_session_entries (session_id, branch_id, created_at)`,
+			],
+		},
+		{
+			version: 3,
+			description: "Allow durable session compaction entries.",
+			sql: [
+				`alter table theta_session_entries
+drop constraint if exists theta_session_entries_kind_check`,
+				`alter table theta_session_entries
+add constraint theta_session_entries_kind_check
+check (kind in ('message', 'modelChange', 'thinkingLevelChange', 'compaction', 'custom'))`,
 			],
 		},
 	];

@@ -1,14 +1,19 @@
-import type { ThetaMessage } from "../messages.ts";
+import type {
+	ThetaCompactionSummaryMessage,
+	ThetaMessage,
+} from "../messages.ts";
 import type { ThetaModelRef, ThetaThinkingLevel } from "../model.ts";
 import { createMemoryThetaSessionStore } from "./store.ts";
 import type {
 	AppendThetaSessionCustomEntryOptions,
+	AppendThetaSessionCompactionEntryOptions,
 	AppendThetaSessionEntryOptions,
 	CreateThetaSessionManagerOptions,
 	CreateThetaSessionOptions,
 	ForkThetaSessionBranchOptions,
 	ThetaSessionBranch,
 	ThetaSessionBranchNode,
+	ThetaSessionCompactionEntry,
 	ThetaSessionCustomEntry,
 	ThetaSessionEntry,
 	ThetaSessionEntryBase,
@@ -129,6 +134,24 @@ class ThetaSessionManagerController implements ThetaSessionManager {
 		}));
 	}
 
+	async appendCompactionEntry(
+		sessionId: string,
+		options: AppendThetaSessionCompactionEntryOptions,
+	): Promise<ThetaSessionCompactionEntry> {
+		return this.appendEntry(sessionId, options, (base) =>
+			withOptional(
+				{
+					...base,
+					kind: "compaction",
+					summary: options.summary,
+					firstKeptEntryId: options.firstKeptEntryId,
+					tokensBefore: options.tokensBefore,
+				},
+				{ details: options.details },
+			),
+		);
+	}
+
 	async appendCustomEntry(
 		sessionId: string,
 		options: AppendThetaSessionCustomEntryOptions,
@@ -214,13 +237,17 @@ class ThetaSessionManagerController implements ThetaSessionManager {
 		}
 		const targetBranchId = branchId ?? snapshot.session.activeBranchId;
 		const branch = requireBranch(snapshot, targetBranchId);
-		const entries = entriesForBranch(snapshot, targetBranchId);
+		const entries = applyCompactions(
+			entriesForBranch(snapshot, targetBranchId),
+		);
 		let model: ThetaModelRef | undefined;
 		let thinkingLevel: ThetaThinkingLevel = "off";
 		const messages: ThetaMessage[] = [];
 		for (const entry of entries) {
 			if (entry.kind === "message") {
 				messages.push(entry.message);
+			} else if (entry.kind === "compaction") {
+				messages.push(compactionEntryToMessage(entry));
 			} else if (entry.kind === "modelChange") {
 				model = entry.model;
 			} else if (entry.kind === "thinkingLevelChange") {
@@ -296,6 +323,46 @@ class ThetaSessionManagerController implements ThetaSessionManager {
 		}
 		return snapshot;
 	}
+}
+
+function applyCompactions(
+	entries: readonly ThetaSessionEntry[],
+): readonly ThetaSessionEntry[] {
+	let latestCompactionIndex = -1;
+	for (let index = 0; index < entries.length; index += 1) {
+		if (entries[index]?.kind === "compaction") {
+			latestCompactionIndex = index;
+		}
+	}
+	if (latestCompactionIndex === -1) {
+		return entries;
+	}
+	const compaction = entries[
+		latestCompactionIndex
+	] as ThetaSessionCompactionEntry;
+	const firstKeptIndex = entries.findIndex(
+		(entry) => entry.id === compaction.firstKeptEntryId,
+	);
+	if (firstKeptIndex === -1) {
+		return [compaction];
+	}
+	return [
+		compaction,
+		...entries
+			.slice(firstKeptIndex)
+			.filter((entry) => entry.id !== compaction.id),
+	];
+}
+
+function compactionEntryToMessage(
+	entry: ThetaSessionCompactionEntry,
+): ThetaCompactionSummaryMessage {
+	return {
+		role: "compactionSummary",
+		summary: entry.summary,
+		tokensBefore: entry.tokensBefore,
+		timestamp: entry.createdAt,
+	};
 }
 
 function entriesForBranch(
