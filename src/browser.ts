@@ -1,6 +1,18 @@
 export { THETA_PACKAGE_INFO } from "./runtime.ts";
 export { createThetaAgent, ThetaRuntimeNotConfiguredError } from "./agent.ts";
 export {
+	BlobHashMismatchError,
+	BlobNotFoundError,
+	createMemoryBlobStorage,
+	ensureBlobInCache,
+	ensureBlobInStore,
+	hashBlobBytes,
+	putBlobInCache,
+	readBlobBytes,
+	syncBlobsToCache,
+	syncBlobsToStore,
+} from "./blob-sync.ts";
+export {
 	decodeWorkspaceText,
 	dirnameWorkspacePath,
 	encodeWorkspaceText,
@@ -25,6 +37,17 @@ export type {
 	ThetaPromptOptions,
 	ThetaQueueMode,
 } from "./agent.ts";
+export type {
+	BlobBytes,
+	BlobCache,
+	BlobStore,
+	BlobTransferResult,
+	BlobTransferStatus,
+	ContentBlobDescriptor,
+	ContentBlobStat,
+	ContentHash,
+	CreateMemoryBlobStorageOptions,
+} from "./blob-sync.ts";
 export type {
 	ThetaAgentEvent,
 	ThetaEvent,
