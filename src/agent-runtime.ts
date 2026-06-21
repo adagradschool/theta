@@ -18,6 +18,7 @@ import type {
 	KnownProvider,
 	Message,
 	Model,
+	ProviderEnv,
 	TSchema,
 } from "@earendil-works/pi-ai/base";
 import { getModels } from "@earendil-works/pi-ai/base";
@@ -36,11 +37,13 @@ import type {
 } from "./tools.ts";
 import type { ThetaWorkspace } from "./workspace.ts";
 import type { JsonObject } from "./json.ts";
+import { streamThetaProxy } from "./llm-proxy.ts";
 
 export type ThetaAgentStreamFunction = StreamFn;
 
 export interface CreateThetaAgentRuntimeOptions {
 	readonly streamFn?: StreamFn;
+	readonly providerEnv?: ProviderEnv;
 	readonly sessionId?: string;
 	readonly maxRetryDelayMs?: number;
 	readonly toolExecution?: ToolExecutionMode;
@@ -71,7 +74,7 @@ class ThetaAgentRuntimeAdapterImpl implements ThetaAgentRuntimeAdapter {
 			createRuntimeLoopConfig(context, this.options),
 			(event) => emitThetaEvent(event, context),
 			context.signal,
-			this.options.streamFn,
+			this.getStreamFn(context),
 		);
 	}
 
@@ -82,8 +85,23 @@ class ThetaAgentRuntimeAdapterImpl implements ThetaAgentRuntimeAdapter {
 			createRuntimeLoopConfig(context, this.options),
 			(event) => emitThetaEvent(event, context),
 			context.signal,
-			this.options.streamFn,
+			this.getStreamFn(context),
 		);
+	}
+
+	private getStreamFn(context: ThetaAgentRunContext): StreamFn | undefined {
+		if (this.options.streamFn) {
+			return this.options.streamFn;
+		}
+		const proxy = context.proxy;
+		if (!proxy) {
+			return undefined;
+		}
+		return (model, modelContext, options) =>
+			streamThetaProxy(model, modelContext, {
+				...options,
+				proxy,
+			});
 	}
 }
 
@@ -120,6 +138,9 @@ function createRuntimeLoopConfig(
 	}
 	if (options.maxRetryDelayMs !== undefined) {
 		config.maxRetryDelayMs = options.maxRetryDelayMs;
+	}
+	if (options.providerEnv !== undefined) {
+		config.env = options.providerEnv;
 	}
 	return config;
 }

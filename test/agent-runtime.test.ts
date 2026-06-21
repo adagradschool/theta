@@ -1,7 +1,9 @@
 import {
 	createAssistantMessageEventStream,
+	fauxAssistantMessage,
 	type AssistantMessage,
 	type Model,
+	registerFauxProvider,
 	Type,
 } from "@earendil-works/pi-ai/base";
 import { describe, expect, it } from "vitest";
@@ -249,5 +251,42 @@ describe("Theta agent runtime", () => {
 		await run;
 
 		expect(capturedSignal?.aborted).toBe(true);
+	});
+
+	it("passes client-side provider env to direct provider calls", async () => {
+		let seenApiKey: string | undefined;
+		const registration = registerFauxProvider();
+		registration.setResponses([
+			(_context, options) => {
+				seenApiKey = options?.env?.OPENAI_API_KEY;
+				return fauxAssistantMessage("direct env ok");
+			},
+		]);
+		try {
+			const agent = createThetaAgent({
+				id: "agent-direct-env",
+				workspace: createWorkspace(),
+				model: {
+					provider: "faux",
+					id: registration.getModel().id,
+					api: registration.getModel().api,
+				},
+				runtimeOptions: {
+					providerEnv: { OPENAI_API_KEY: "client-secret" },
+				},
+			});
+
+			await agent.prompt("hi");
+
+			const assistant = [...agent.state.messages]
+				.reverse()
+				.find((message) => message.role === "assistant");
+			expect(assistant?.content).toEqual([
+				{ type: "text", text: "direct env ok" },
+			]);
+			expect(seenApiKey).toBe("client-secret");
+		} finally {
+			registration.unregister();
+		}
 	});
 });

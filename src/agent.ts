@@ -52,6 +52,7 @@ interface MutableThetaAgentState {
 export interface ThetaAgentRunContext {
 	readonly agentId: string;
 	readonly workspace: ThetaWorkspace;
+	readonly proxy: ThetaLlmProxyConfig | undefined;
 	readonly state: ThetaAgentState;
 	readonly signal: AbortSignal;
 	emit(event: ThetaAgentEvent): Promise<void>;
@@ -392,6 +393,7 @@ class ThetaAgentController implements ThetaAgent {
 		return {
 			agentId: this.id,
 			workspace: this.workspace,
+			proxy: this.proxy,
 			state: this.state,
 			signal,
 			emit: (event) => this.emit(event),

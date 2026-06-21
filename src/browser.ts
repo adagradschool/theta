@@ -38,6 +38,11 @@ export {
 } from "./local-storage.ts";
 export { createMemoryWorkspaceFs } from "./memory-fs.ts";
 export { createThetaAgentRuntime } from "./agent-runtime.ts";
+export {
+	encodeThetaProxyEvent,
+	reconstructThetaProxyEvent,
+	streamThetaProxy,
+} from "./llm-proxy.ts";
 export { createThetaWorkspace } from "./workspace.ts";
 export type {
 	CreateThetaAgentOptions,
@@ -92,6 +97,12 @@ export type {
 	PutLocalWorkspaceEntryOptions,
 	ThetaStorageMigration,
 } from "./local-storage.ts";
+export type {
+	ThetaProxyRequest,
+	ThetaProxySerializableOptions,
+	ThetaProxyStreamEvent,
+	ThetaStreamProxyOptions,
+} from "./llm-proxy.ts";
 export type { CreateMemoryWorkspaceFsOptions } from "./memory-fs.ts";
 export type {
 	JsonArray,
