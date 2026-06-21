@@ -97,6 +97,18 @@ export {
 	syncThetaWorkspaceBlobsToCache,
 	syncThetaWorkspaceBlobsToStore,
 } from "./workspace-sync.ts";
+export {
+	applyThetaFileTreeEvent,
+	createThetaChatState,
+	createThetaEditorBinding,
+	createThetaFileTreeState,
+	createThetaProgressState,
+	createThetaSyncState,
+	reduceThetaProgressState,
+	reduceThetaSyncState,
+	toolRenderItemFromEvent,
+	toolRenderItemFromResult,
+} from "./ui-state.ts";
 export { createThetaWorkspace } from "./workspace.ts";
 export type {
 	CompactThetaSessionOptions,
@@ -308,6 +320,16 @@ export type {
 	CreateThetaWorkspaceOptions,
 	ThetaWorkspace,
 } from "./workspace.ts";
+export type {
+	ThetaChatItem,
+	ThetaChatState,
+	ThetaEditorBinding,
+	ThetaFileTreeNode,
+	ThetaFileTreeState,
+	ThetaProgressState,
+	ThetaSyncState,
+	ThetaToolRenderItem,
+} from "./ui-state.ts";
 export type {
 	ExportThetaWorkspaceManifestOptions,
 	ImportThetaWorkspaceManifestOptions,

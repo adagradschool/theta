@@ -201,6 +201,8 @@ Status: first slice implemented with structured stale-write errors for optimisti
 
 ## 16. UI Integration Helpers
 
+Status: implemented with framework-free headless helpers for chat state, file tree events, editor bindings, tool render metadata, progress/working state, and sync status summaries. An opt-in `./react` entrypoint layers hooks over those helpers with React as an optional peer dependency; the core/browser entrypoints remain UI-dependency-free.
+
 1. Define a headless state adapter for chat UIs.
 2. Define file tree event helpers.
 3. Define editor binding helpers.
