@@ -39,6 +39,7 @@ class LocalWorkspaceFs implements WorkspaceFs {
 	private readonly workspaceId: string;
 	private readonly metadata: PGliteWorkspaceMetadataStore;
 	private readonly blobs: BlobCache;
+	private readonly deviceId: string | undefined;
 	private readonly now: () => number;
 	private readonly watchers = new Map<string, Set<(event: FsEvent) => void>>();
 	private rootReady: Promise<void> | undefined;
@@ -47,6 +48,7 @@ class LocalWorkspaceFs implements WorkspaceFs {
 		this.workspaceId = options.workspaceId;
 		this.metadata = options.metadata;
 		this.blobs = options.blobs;
+		this.deviceId = options.deviceId;
 		this.now = options.now ?? Date.now;
 	}
 
@@ -106,6 +108,7 @@ class LocalWorkspaceFs implements WorkspaceFs {
 		const version = nextVersion(existing?.version);
 		const mimeType = options.mimeType ?? existing?.mimeType;
 		const metadata = options.metadata ?? existing?.metadata;
+		const createdByDeviceId = existing?.createdByDeviceId ?? this.deviceId;
 		const entry = makeEntry({
 			workspaceId: this.workspaceId,
 			path: normalized,
@@ -113,8 +116,13 @@ class LocalWorkspaceFs implements WorkspaceFs {
 			version,
 			size: blob.size,
 			contentHash: blob.hash,
+			blobSyncStatus: "local_only",
 			createdAt: existing?.createdAt ?? timestamp,
 			updatedAt: timestamp,
+			...(createdByDeviceId !== undefined ? { createdByDeviceId } : {}),
+			...(this.deviceId !== undefined
+				? { updatedByDeviceId: this.deviceId }
+				: {}),
 			...(mimeType !== undefined ? { mimeType } : {}),
 			...(metadata !== undefined ? { metadata } : {}),
 		});
@@ -131,6 +139,9 @@ class LocalWorkspaceFs implements WorkspaceFs {
 			version,
 			contentHash: blob.hash,
 			size: blob.size,
+			...(this.deviceId !== undefined
+				? { createdByDeviceId: this.deviceId }
+				: {}),
 			createdAt: timestamp,
 		});
 		await this.touchParent(normalized);
@@ -223,6 +234,9 @@ class LocalWorkspaceFs implements WorkspaceFs {
 				path: nextPath,
 				version: nextVersion(entry.version),
 				updatedAt: timestamp,
+				...(this.deviceId !== undefined
+					? { updatedByDeviceId: this.deviceId }
+					: {}),
 			});
 			await this.metadata.putEntry(nextEntry, { overwrite: false });
 			if (nextEntry.kind === "file" && nextEntry.contentHash) {
@@ -232,6 +246,9 @@ class LocalWorkspaceFs implements WorkspaceFs {
 					version: nextEntry.version,
 					contentHash: nextEntry.contentHash,
 					size: nextEntry.size,
+					...(this.deviceId !== undefined
+						? { createdByDeviceId: this.deviceId }
+						: {}),
 					createdAt: timestamp,
 				});
 			}
@@ -266,6 +283,12 @@ class LocalWorkspaceFs implements WorkspaceFs {
 			size: 0,
 			createdAt: timestamp,
 			updatedAt: timestamp,
+			...(this.deviceId !== undefined
+				? {
+						createdByDeviceId: this.deviceId,
+						updatedByDeviceId: this.deviceId,
+					}
+				: {}),
 		});
 		await this.metadata.putEntry(entry, { overwrite: false });
 		await this.touchParent(normalized);
@@ -334,6 +357,12 @@ class LocalWorkspaceFs implements WorkspaceFs {
 				size: 0,
 				createdAt: timestamp,
 				updatedAt: timestamp,
+				...(this.deviceId !== undefined
+					? {
+							createdByDeviceId: this.deviceId,
+							updatedByDeviceId: this.deviceId,
+						}
+					: {}),
 			}),
 			{ overwrite: false },
 		);

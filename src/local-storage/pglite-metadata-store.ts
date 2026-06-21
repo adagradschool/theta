@@ -13,6 +13,7 @@ import type {
 	LocalWorkspaceEntryKind,
 	LocalWorkspaceEntryRecord,
 	LocalWorkspaceFileVersionRecord,
+	LocalBlobSyncStatus,
 	PGliteWorkspaceMetadataStore,
 	PutLocalWorkspaceEntryOptions,
 } from "./types.ts";
@@ -123,8 +124,9 @@ order by path asc`,
 			await this.pg.query(
 				`insert into theta_workspace_entries (
   workspace_id, path, parent_path, name, kind, version, size, content_hash,
-  mime_type, metadata_json, created_at, updated_at, deleted_at
-) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+  mime_type, metadata_json, blob_sync_status, created_by_device_id,
+  updated_by_device_id, created_at, updated_at, deleted_at
+) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
 on conflict (workspace_id, path) do update set
   parent_path = excluded.parent_path,
   name = excluded.name,
@@ -134,6 +136,9 @@ on conflict (workspace_id, path) do update set
   content_hash = excluded.content_hash,
   mime_type = excluded.mime_type,
   metadata_json = excluded.metadata_json,
+  blob_sync_status = excluded.blob_sync_status,
+  created_by_device_id = coalesce(theta_workspace_entries.created_by_device_id, excluded.created_by_device_id),
+  updated_by_device_id = excluded.updated_by_device_id,
   updated_at = excluded.updated_at,
   deleted_at = excluded.deleted_at`,
 				entryParams(entry),
@@ -155,14 +160,41 @@ where workspace_id = $1 and path = $2`,
 		);
 	}
 
+	async listEntries(
+		workspaceId: string,
+	): Promise<readonly LocalWorkspaceEntryRecord[]> {
+		await this.migrate();
+		const result = await this.pg.query<PGliteEntryRow>(
+			`select * from theta_workspace_entries
+where workspace_id = $1 and deleted_at is null
+order by path asc`,
+			[workspaceId],
+		);
+		return result.rows.map(rowToEntry);
+	}
+
+	async updateBlobSyncStatus(
+		workspaceId: string,
+		path: string,
+		status: LocalBlobSyncStatus,
+	): Promise<void> {
+		await this.migrate();
+		await this.pg.query(
+			`update theta_workspace_entries
+set blob_sync_status = $3
+where workspace_id = $1 and path = $2`,
+			[workspaceId, normalizeWorkspacePath(path), status],
+		);
+	}
+
 	async recordFileVersion(
 		version: LocalWorkspaceFileVersionRecord,
 	): Promise<void> {
 		await this.migrate();
 		await this.pg.query(
 			`insert into theta_file_versions (
-  workspace_id, path, version, content_hash, size, created_at
-) values ($1,$2,$3,$4,$5,$6)
+  workspace_id, path, version, content_hash, size, created_by_device_id, created_at
+) values ($1,$2,$3,$4,$5,$6,$7)
 on conflict (workspace_id, path, version) do nothing`,
 			[
 				version.workspaceId,
@@ -170,6 +202,7 @@ on conflict (workspace_id, path, version) do nothing`,
 				version.version,
 				version.contentHash,
 				version.size,
+				version.createdByDeviceId ?? null,
 				version.createdAt,
 			],
 		);
@@ -192,6 +225,9 @@ order by created_at asc`,
 			version: row.version,
 			contentHash: row.content_hash,
 			size: numberFromPg(row.size),
+			...(row.created_by_device_id !== null
+				? { createdByDeviceId: row.created_by_device_id }
+				: {}),
 			createdAt: numberFromPg(row.created_at),
 		}));
 	}
@@ -223,6 +259,9 @@ interface PGliteEntryRow {
 	readonly content_hash: ContentHash | null;
 	readonly mime_type: string | null;
 	readonly metadata_json: string | null;
+	readonly blob_sync_status: LocalBlobSyncStatus | null;
+	readonly created_by_device_id: string | null;
+	readonly updated_by_device_id: string | null;
 	readonly created_at: number | string;
 	readonly updated_at: number | string;
 	readonly deleted_at: number | string | null;
@@ -234,6 +273,7 @@ interface PGliteVersionRow {
 	readonly version: string;
 	readonly content_hash: ContentHash;
 	readonly size: number | string;
+	readonly created_by_device_id: string | null;
 	readonly created_at: number | string;
 }
 
@@ -250,6 +290,15 @@ function rowToEntry(row: PGliteEntryRow): LocalWorkspaceEntryRecord {
 		...(row.content_hash !== null ? { contentHash: row.content_hash } : {}),
 		...(row.mime_type !== null ? { mimeType: row.mime_type } : {}),
 		...(metadata !== undefined ? { metadata } : {}),
+		...(row.blob_sync_status !== null
+			? { blobSyncStatus: row.blob_sync_status }
+			: {}),
+		...(row.created_by_device_id !== null
+			? { createdByDeviceId: row.created_by_device_id }
+			: {}),
+		...(row.updated_by_device_id !== null
+			? { updatedByDeviceId: row.updated_by_device_id }
+			: {}),
 		...(row.deleted_at !== null
 			? { deletedAt: numberFromPg(row.deleted_at) }
 			: {}),
@@ -268,6 +317,9 @@ function entryParams(entry: LocalWorkspaceEntryRecord): unknown[] {
 		entry.contentHash ?? null,
 		entry.mimeType ?? null,
 		entry.metadata === undefined ? null : JSON.stringify(entry.metadata),
+		entry.blobSyncStatus ?? null,
+		entry.createdByDeviceId ?? null,
+		entry.updatedByDeviceId ?? null,
 		entry.createdAt,
 		entry.updatedAt,
 		entry.deletedAt ?? null,

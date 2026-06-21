@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
 	BlobHashMismatchError,
 	BlobNotFoundError,
+	createHttpBlobStore,
 	createMemoryBlobStorage,
 	ensureBlobInCache,
 	ensureBlobInStore,
@@ -133,4 +134,69 @@ describe("content-addressed blob sync", () => {
 
 		expect(Array.from(await readBlobBytes(stream))).toEqual([1, 2, 3]);
 	});
+
+	it("uses HTTP blob stores with host-provided headers", async () => {
+		const backing = createMemoryBlobStorage();
+		const seen: Array<{ method: string; authorization: string | null }> = [];
+		const store = createHttpBlobStore({
+			baseUrl: "https://blob.example/blobs",
+			headers: { Authorization: "Bearer app-token" },
+			fetch: async (input, init) => {
+				const url = new URL(String(input));
+				const hash = decodeURIComponent(url.pathname.split("/").at(-1) ?? "");
+				const headers = new Headers(init?.headers);
+				seen.push({
+					method: init?.method ?? "GET",
+					authorization: headers.get("authorization"),
+				});
+				if (init?.method === "PUT") {
+					const body = init.body;
+					if (!(body instanceof ArrayBuffer)) {
+						throw new Error("Expected ArrayBuffer body.");
+					}
+					await backing.put(new Uint8Array(body), hash as ContentHash);
+					return new Response(null, { status: 204 });
+				}
+				if (init?.method === "HEAD") {
+					return new Response(null, {
+						status: (await backing.has(hash as ContentHash)) ? 204 : 404,
+						headers: (await backing.has(hash as ContentHash))
+							? {
+									"content-length": String(
+										(await backing.stat(hash as ContentHash)).size,
+									),
+								}
+							: {},
+					});
+				}
+				if (init?.method === "GET") {
+					try {
+						return new Response(
+							toArrayBuffer(await backing.get(hash as ContentHash)),
+						);
+					} catch {
+						return new Response(null, { status: 404 });
+					}
+				}
+				return new Response(null, { status: 405 });
+			},
+		});
+		const descriptor = await store.put(new TextEncoder().encode("http"));
+
+		expect(await store.has(descriptor.hash)).toBe(true);
+		expect(await store.get(descriptor.hash)).toEqual(
+			new TextEncoder().encode("http"),
+		);
+		expect(seen.map((request) => request.authorization)).toEqual([
+			"Bearer app-token",
+			"Bearer app-token",
+			"Bearer app-token",
+		]);
+	});
 });
+
+function toArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+	const buffer = new ArrayBuffer(bytes.byteLength);
+	new Uint8Array(buffer).set(bytes);
+	return buffer;
+}

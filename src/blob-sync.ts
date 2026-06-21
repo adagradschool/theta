@@ -71,10 +71,22 @@ export interface CreateMemoryBlobStorageOptions {
 	readonly now?: () => number;
 }
 
+export interface CreateHttpBlobStoreOptions {
+	readonly baseUrl: string | URL;
+	readonly headers?: Readonly<Record<string, string>>;
+	readonly fetch?: typeof fetch;
+}
+
 export function createMemoryBlobStorage(
 	options: CreateMemoryBlobStorageOptions = {},
 ): BlobCache & BlobStore {
 	return new MemoryBlobStorage(options);
+}
+
+export function createHttpBlobStore(
+	options: CreateHttpBlobStoreOptions,
+): BlobStore {
+	return new HttpBlobStore(options);
 }
 
 export async function hashBlobBytes(bytes: BlobBytes): Promise<ContentHash> {
@@ -238,6 +250,113 @@ class MemoryBlobStorage implements BlobCache, BlobStore {
 			...(blob.updatedAt !== undefined ? { updatedAt: blob.updatedAt } : {}),
 		};
 	}
+}
+
+class HttpBlobStore implements BlobStore {
+	private readonly baseUrl: URL;
+	private readonly headers: Readonly<Record<string, string>>;
+	private readonly fetchFn: typeof fetch;
+
+	constructor(options: CreateHttpBlobStoreOptions) {
+		this.baseUrl = new URL(options.baseUrl);
+		this.headers = options.headers ?? {};
+		this.fetchFn = options.fetch ?? fetch;
+	}
+
+	async has(hash: ContentHash): Promise<boolean> {
+		const response = await this.fetchFn(this.blobUrl(hash), {
+			method: "HEAD",
+			headers: this.headers,
+		});
+		if (response.status === 404) {
+			return false;
+		}
+		if (!response.ok) {
+			throw new Error(`Blob HEAD failed for ${hash}: ${response.status}`);
+		}
+		return true;
+	}
+
+	async get(hash: ContentHash): Promise<Uint8Array> {
+		const response = await this.fetchFn(this.blobUrl(hash), {
+			method: "GET",
+			headers: this.headers,
+		});
+		if (response.status === 404) {
+			throw new BlobNotFoundError(hash);
+		}
+		if (!response.ok) {
+			throw new Error(`Blob GET failed for ${hash}: ${response.status}`);
+		}
+		const bytes = new Uint8Array(await response.arrayBuffer());
+		const actualHash = await hashBlobBytes(bytes);
+		if (actualHash !== hash) {
+			throw new BlobHashMismatchError(hash, actualHash);
+		}
+		return bytes;
+	}
+
+	async put(
+		bytes: BlobBytes,
+		expectedHash?: ContentHash,
+	): Promise<ContentBlobDescriptor> {
+		const data = await readBlobBytes(bytes);
+		const hash = await hashBlobBytes(data);
+		if (expectedHash !== undefined && hash !== expectedHash) {
+			throw new BlobHashMismatchError(expectedHash, hash);
+		}
+		const response = await this.fetchFn(this.blobUrl(hash), {
+			method: "PUT",
+			headers: {
+				...this.headers,
+				"Content-Type": "application/octet-stream",
+			},
+			body: toArrayBuffer(data),
+		});
+		if (!response.ok) {
+			throw new Error(`Blob PUT failed for ${hash}: ${response.status}`);
+		}
+		return { hash, size: data.byteLength };
+	}
+
+	async delete(hash: ContentHash): Promise<void> {
+		const response = await this.fetchFn(this.blobUrl(hash), {
+			method: "DELETE",
+			headers: this.headers,
+		});
+		if (response.status !== 404 && !response.ok) {
+			throw new Error(`Blob DELETE failed for ${hash}: ${response.status}`);
+		}
+	}
+
+	async stat(hash: ContentHash): Promise<ContentBlobStat> {
+		const response = await this.fetchFn(this.blobUrl(hash), {
+			method: "HEAD",
+			headers: this.headers,
+		});
+		if (response.status === 404) {
+			throw new BlobNotFoundError(hash);
+		}
+		if (!response.ok) {
+			throw new Error(`Blob HEAD failed for ${hash}: ${response.status}`);
+		}
+		return {
+			hash,
+			size: Number.parseInt(response.headers.get("content-length") ?? "0", 10),
+		};
+	}
+
+	private blobUrl(hash: ContentHash): URL {
+		return new URL(encodeURIComponent(hash), ensureTrailingSlash(this.baseUrl));
+	}
+}
+
+function ensureTrailingSlash(url: URL): URL {
+	const copy = new URL(url);
+	if (!copy.pathname.endsWith("/")) {
+		copy.pathname += "/";
+	}
+	return copy;
 }
 
 async function statBlob(

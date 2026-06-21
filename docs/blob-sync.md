@@ -26,3 +26,19 @@ OPFS is a cache. If it is evicted, synced metadata can identify the missing hash
 Adapters must verify `expectedHash` on writes. A hash mismatch means the byte stream is corrupt or the metadata points at the wrong object.
 
 Adapters should copy byte buffers on read/write boundaries or otherwise guarantee callers cannot mutate stored content accidentally.
+
+## Implemented Slice
+
+Theta exposes `createHttpBlobStore()` for browser clients that talk to an app-owned blob endpoint. The host can provide arbitrary headers for auth and tenancy, matching the LLM proxy pattern.
+
+Workspace metadata can be exported and imported with:
+
+- `exportThetaWorkspaceManifest()`
+- `importThetaWorkspaceManifest()`
+
+Blob bytes can be reconciled with:
+
+- `syncThetaWorkspaceBlobsToStore()`
+- `syncThetaWorkspaceBlobsToCache()`
+
+This gives the Electric layer a clear shape boundary: Electric/Postgres syncs manifest rows, while blob sync materializes the referenced content hashes.

@@ -9,6 +9,14 @@ export interface ThetaStorageMigration {
 }
 
 export type LocalWorkspaceEntryKind = "file" | "directory";
+export type LocalBlobSyncStatus =
+	| "local_only"
+	| "uploading"
+	| "uploaded"
+	| "download_needed"
+	| "downloading"
+	| "ready"
+	| "error";
 
 export interface LocalWorkspaceEntryRecord {
 	readonly workspaceId: string;
@@ -21,6 +29,9 @@ export interface LocalWorkspaceEntryRecord {
 	readonly contentHash?: ContentHash;
 	readonly mimeType?: string;
 	readonly metadata?: JsonObject;
+	readonly blobSyncStatus?: LocalBlobSyncStatus;
+	readonly createdByDeviceId?: string;
+	readonly updatedByDeviceId?: string;
 	readonly createdAt: number;
 	readonly updatedAt: number;
 	readonly deletedAt?: number;
@@ -32,6 +43,7 @@ export interface LocalWorkspaceFileVersionRecord {
 	readonly version: string;
 	readonly contentHash: ContentHash;
 	readonly size: number;
+	readonly createdByDeviceId?: string;
 	readonly createdAt: number;
 }
 
@@ -56,6 +68,14 @@ export interface PGliteWorkspaceMetadataStore {
 		options?: PutLocalWorkspaceEntryOptions,
 	): Promise<void>;
 	deleteEntry(workspaceId: string, path: string): Promise<void>;
+	listEntries(
+		workspaceId: string,
+	): Promise<readonly LocalWorkspaceEntryRecord[]>;
+	updateBlobSyncStatus(
+		workspaceId: string,
+		path: string,
+		status: LocalBlobSyncStatus,
+	): Promise<void>;
 	recordFileVersion(version: LocalWorkspaceFileVersionRecord): Promise<void>;
 	listFileVersions(
 		workspaceId: string,
@@ -67,6 +87,7 @@ export interface CreateLocalWorkspaceFsOptions {
 	readonly workspaceId: string;
 	readonly metadata: PGliteWorkspaceMetadataStore;
 	readonly blobs: BlobCache;
+	readonly deviceId?: string;
 	readonly now?: () => number;
 }
 

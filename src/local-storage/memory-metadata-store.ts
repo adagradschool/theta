@@ -12,6 +12,7 @@ import {
 } from "./record-utils.ts";
 import type {
 	CreateMemoryPGliteWorkspaceMetadataStoreOptions,
+	LocalBlobSyncStatus,
 	LocalWorkspaceEntryRecord,
 	LocalWorkspaceFileVersionRecord,
 	PGliteWorkspaceMetadataStore,
@@ -103,6 +104,27 @@ class MemoryPGliteWorkspaceMetadataStore
 
 	async deleteEntry(workspaceId: string, path: string): Promise<void> {
 		this.entries.delete(entryKey(workspaceId, normalizeWorkspacePath(path)));
+	}
+
+	async listEntries(
+		workspaceId: string,
+	): Promise<readonly LocalWorkspaceEntryRecord[]> {
+		return Array.from(this.entries.values())
+			.filter((entry) => entry.workspaceId === workspaceId)
+			.map(cloneEntry)
+			.sort((a, b) => a.path.localeCompare(b.path));
+	}
+
+	async updateBlobSyncStatus(
+		workspaceId: string,
+		path: string,
+		status: LocalBlobSyncStatus,
+	): Promise<void> {
+		const key = entryKey(workspaceId, normalizeWorkspacePath(path));
+		const entry = this.entries.get(key);
+		if (entry) {
+			this.entries.set(key, { ...cloneEntry(entry), blobSyncStatus: status });
+		}
 	}
 
 	async recordFileVersion(

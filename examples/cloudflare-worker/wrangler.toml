@@ -1,6 +1,11 @@
 name = "theta-proxy"
 main = "src/index.ts"
 compatibility_date = "2026-06-21"
+compatibility_flags = ["nodejs_compat"]
 
 [observability]
 enabled = true
+
+[[r2_buckets]]
+binding = "THETA_BLOBS"
+bucket_name = "theta-blobs"

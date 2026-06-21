@@ -6,7 +6,7 @@ export const THETA_LOCAL_STORAGE_STRATEGY = {
 	durableSync: "postgres-electric",
 } as const;
 
-export const THETA_LOCAL_STORAGE_SCHEMA_VERSION = 3;
+export const THETA_LOCAL_STORAGE_SCHEMA_VERSION = 4;
 
 export const THETA_LOCAL_STORAGE_MIGRATIONS: readonly ThetaStorageMigration[] =
 	[
@@ -104,6 +104,23 @@ drop constraint if exists theta_session_entries_kind_check`,
 				`alter table theta_session_entries
 add constraint theta_session_entries_kind_check
 check (kind in ('message', 'modelChange', 'thinkingLevelChange', 'compaction', 'custom'))`,
+			],
+		},
+		{
+			version: 4,
+			description:
+				"Add local-first blob sync and device metadata to workspace manifests.",
+			sql: [
+				`alter table theta_workspace_entries
+add column if not exists blob_sync_status text`,
+				`alter table theta_workspace_entries
+add column if not exists created_by_device_id text`,
+				`alter table theta_workspace_entries
+add column if not exists updated_by_device_id text`,
+				`alter table theta_file_versions
+add column if not exists created_by_device_id text`,
+				`create index if not exists theta_workspace_entries_blob_status_idx
+on theta_workspace_entries (workspace_id, blob_sync_status)`,
 			],
 		},
 	];

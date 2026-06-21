@@ -3,6 +3,7 @@ export { createThetaAgent, ThetaRuntimeNotConfiguredError } from "./agent.ts";
 export {
 	BlobHashMismatchError,
 	BlobNotFoundError,
+	createHttpBlobStore,
 	createMemoryBlobStorage,
 	ensureBlobInCache,
 	ensureBlobInStore,
@@ -81,6 +82,13 @@ export {
 	createPGliteThetaSessionStore,
 	createThetaSessionManager,
 } from "./sessions/index.ts";
+export {
+	contentHashesFromManifest,
+	exportThetaWorkspaceManifest,
+	importThetaWorkspaceManifest,
+	syncThetaWorkspaceBlobsToCache,
+	syncThetaWorkspaceBlobsToStore,
+} from "./workspace-sync.ts";
 export { createThetaWorkspace } from "./workspace.ts";
 export type {
 	CompactThetaSessionOptions,
@@ -123,6 +131,7 @@ export type {
 	ContentBlobDescriptor,
 	ContentBlobStat,
 	ContentHash,
+	CreateHttpBlobStoreOptions,
 	CreateMemoryBlobStorageOptions,
 } from "./blob-sync.ts";
 export type {
@@ -173,6 +182,7 @@ export type {
 	CreateMemoryLocalWorkspaceFsOptions,
 	CreateMemoryPGliteWorkspaceMetadataStoreOptions,
 	CreateOpfsBlobCacheOptions,
+	LocalBlobSyncStatus,
 	LocalWorkspaceEntryKind,
 	LocalWorkspaceEntryRecord,
 	LocalWorkspaceFileVersionRecord,
@@ -268,3 +278,8 @@ export type {
 	CreateThetaWorkspaceOptions,
 	ThetaWorkspace,
 } from "./workspace.ts";
+export type {
+	ExportThetaWorkspaceManifestOptions,
+	ImportThetaWorkspaceManifestOptions,
+	ThetaWorkspaceManifestSnapshot,
+} from "./workspace-sync.ts";

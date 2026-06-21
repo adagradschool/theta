@@ -138,6 +138,8 @@ Status: implemented with a PGlite metadata/control-plane store, OPFS content-add
 
 ## 12. Content-Addressed Blob Sync
 
+Status: first slice implemented with an HTTP blob-store client, host-provided headers, content-hash validation, workspace manifest export/import, blob upload/download helpers, blob sync status metadata, device metadata, and a two-device deterministic sync test. Server-side R2/S3 helper, retries/resumability, garbage collection, and large-file browser integration remain.
+
 1. Define blob identity as hash plus size and content type where useful.
 2. Define file manifest records that map paths and versions to blob identities.
 3. Define a minimal blob-store interface for upload, download, exists/head, and delete/garbage collection.
@@ -151,6 +153,8 @@ Status: implemented with a PGlite metadata/control-plane store, OPFS content-add
 11. Add browser integration tests for multi-file, binary-file, and large-file blob sync.
 
 ## 13. Electric SQL Sync
+
+Status: first local shape boundary implemented as workspace manifest export/import over PGlite metadata, including device fields and blob status. This is not yet wired to Electric shape subscriptions or Postgres mutations.
 
 1. Define the Postgres schema for workspaces, file manifests, sessions, branches, session entries, devices, and sync metadata.
 2. Keep blob bytes out of Electric/Postgres; sync only metadata, manifests, hashes, versions, and blob references.

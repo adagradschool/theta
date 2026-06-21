@@ -32,6 +32,15 @@ export function makeEntry(
 			: {}),
 		...(input.mimeType !== undefined ? { mimeType: input.mimeType } : {}),
 		...(input.metadata !== undefined ? { metadata: input.metadata } : {}),
+		...(input.blobSyncStatus !== undefined
+			? { blobSyncStatus: input.blobSyncStatus }
+			: {}),
+		...(input.createdByDeviceId !== undefined
+			? { createdByDeviceId: input.createdByDeviceId }
+			: {}),
+		...(input.updatedByDeviceId !== undefined
+			? { updatedByDeviceId: input.updatedByDeviceId }
+			: {}),
 		...(input.deletedAt !== undefined ? { deletedAt: input.deletedAt } : {}),
 	};
 }
