@@ -63,8 +63,8 @@ export {
 	streamThetaProxy,
 } from "./llm-proxy.ts";
 export {
-	createBrowserThetaSessionStore,
 	createMemoryThetaSessionStore,
+	createPGliteThetaSessionStore,
 	createThetaSessionManager,
 } from "./sessions/index.ts";
 export { createThetaWorkspace } from "./workspace.ts";
@@ -204,7 +204,7 @@ export type { ThetaPackageInfo, ThetaRuntimeTarget } from "./runtime.ts";
 export type {
 	AppendThetaSessionCustomEntryOptions,
 	AppendThetaSessionEntryOptions,
-	CreateBrowserThetaSessionStoreOptions,
+	CreatePGliteThetaSessionStoreOptions,
 	CreateThetaSessionManagerOptions,
 	CreateThetaSessionOptions,
 	ForkThetaSessionBranchOptions,

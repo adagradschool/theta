@@ -107,7 +107,7 @@ End goal: publish Theta as an npm package that can be pulled into any browser pr
 
 ## 10. Sessions
 
-Status: implemented locally with in-memory and browser `Storage`-backed stores, session restore, active branches, forked branches, model/thinking/custom/message entries, unit tests, and a persistence smoke test. This is not yet backed by PGlite/OPFS/Electric sync.
+Status: implemented locally with in-memory and PGlite-backed durable stores, session restore, active branches, forked branches, model/thinking/custom/message entries, unit tests, and a persistence smoke test. Electric sync is still later.
 
 1. Define session entry types.
 2. Define session tree and parent-child relationships.
@@ -123,7 +123,9 @@ Status: implemented locally with in-memory and browser `Storage`-backed stores, 
 
 ## 11. Durable Browser Persistence
 
-1. Replace the temporary browser `Storage` session store with a PGlite-backed store.
+Status: implemented with a PGlite metadata/control-plane store, OPFS content-addressed blob cache, PGlite-backed session store, schema migrations, unit tests, and a headless Chrome smoke that writes data, restarts the browser context, and reads it back. Large-workspace quota stress testing is still limited to the storage-estimate hook points rather than a full 100s-of-MB fixture.
+
+1. Use a PGlite-backed store for durable browser sessions.
 2. Run PGlite on OPFS so workspace state survives reloads, browser restarts, and large local workspaces.
 3. Define the local durable schema for workspaces, file metadata, file manifests, sessions, branches, and session entries.
 4. Store file bytes as content-addressed blobs in OPFS, not inline database payloads.

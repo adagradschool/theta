@@ -1,4 +1,6 @@
 import type { JsonObject, JsonValue } from "../json.ts";
+import type { PGliteInterface } from "@electric-sql/pglite";
+import type { PGliteWorkspaceMetadataStore } from "../local-storage/types.ts";
 import type { ThetaMessage } from "../messages.ts";
 import type { ThetaModelRef, ThetaThinkingLevel } from "../model.ts";
 
@@ -131,9 +133,10 @@ export interface CreateThetaSessionManagerOptions {
 	readonly createId?: () => string;
 }
 
-export interface CreateBrowserThetaSessionStoreOptions {
-	readonly storage?: Storage;
-	readonly key?: string;
+export interface CreatePGliteThetaSessionStoreOptions {
+	readonly pg: Pick<PGliteInterface, "query" | "exec">;
+	readonly metadata: PGliteWorkspaceMetadataStore;
+	readonly now?: () => number;
 }
 
 export interface ThetaSessionManager {

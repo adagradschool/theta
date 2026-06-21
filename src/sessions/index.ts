@@ -1,10 +1,10 @@
-export { createBrowserThetaSessionStore } from "./browser-store.ts";
 export { createThetaSessionManager } from "./manager.ts";
+export { createPGliteThetaSessionStore } from "./pglite-store.ts";
 export { createMemoryThetaSessionStore } from "./store.ts";
 export type {
 	AppendThetaSessionCustomEntryOptions,
 	AppendThetaSessionEntryOptions,
-	CreateBrowserThetaSessionStoreOptions,
+	CreatePGliteThetaSessionStoreOptions,
 	CreateThetaSessionManagerOptions,
 	CreateThetaSessionOptions,
 	ForkThetaSessionBranchOptions,

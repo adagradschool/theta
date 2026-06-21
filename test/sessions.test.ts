@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
+import { PGlite } from "@electric-sql/pglite";
 import {
-	createBrowserThetaSessionStore,
 	createMemoryThetaSessionStore,
+	createPGliteThetaSessionStore,
+	createPGliteWorkspaceMetadataStore,
+	THETA_LOCAL_STORAGE_SCHEMA_VERSION,
 	createThetaSessionManager,
 	type ThetaMessage,
 } from "../src/index.ts";
@@ -119,26 +122,75 @@ describe("Theta sessions", () => {
 		expect(restored?.branch.id).toBe(fork.id);
 	});
 
-	it("persists sessions through browser Storage", async () => {
-		const storage = new MemoryStorage();
-		const store = createBrowserThetaSessionStore({
-			storage,
-			key: "test:sessions",
-		});
+	it("persists sessions through PGlite durable metadata tables", async () => {
+		const pg = new PGlite();
+		const metadata = createPGliteWorkspaceMetadataStore(pg);
+		const store = createPGliteThetaSessionStore({ pg, metadata });
 		const manager = createThetaSessionManager({
 			store,
-			createId: fixedIds("session-a", "root", "entry-1"),
+			now: fixedClock(1000, 10),
+			createId: fixedIds(
+				"session-a",
+				"root",
+				"model",
+				"thinking",
+				"root-message",
+				"fork",
+				"branch-message",
+				"custom",
+			),
 		});
-		const snapshot = await manager.createSession({ title: "Persistent" });
-		await manager.appendMessage(snapshot.session.id, userMessage("saved", 1));
+
+		const snapshot = await manager.createSession({
+			title: "Durable",
+			workspaceId: "workspace-a",
+			metadata: { source: "test" },
+		});
+		await manager.appendModelChange(snapshot.session.id, {
+			provider: "openai",
+			id: "gpt-4.1-nano",
+		});
+		await manager.appendThinkingLevelChange(snapshot.session.id, "high");
+		await manager.appendMessage(snapshot.session.id, userMessage("root", 1));
+		const fork = await manager.forkBranch(snapshot.session.id, {
+			title: "Durable branch",
+		});
+		await manager.appendMessage(snapshot.session.id, userMessage("branch", 2));
+		await manager.appendCustomEntry(snapshot.session.id, {
+			customType: "checkpoint",
+			data: { persisted: true },
+		});
 
 		const restoredManager = createThetaSessionManager({
-			store: createBrowserThetaSessionStore({ storage, key: "test:sessions" }),
+			store: createPGliteThetaSessionStore({ pg, metadata }),
 		});
 		const restored = await restoredManager.restore(snapshot.session.id);
+		const tree = await restoredManager.getSessionTree(snapshot.session.id);
 
-		expect(restored?.session.title).toBe("Persistent");
-		expect(restored?.messages).toEqual([userMessage("saved", 1)]);
+		expect(await metadata.getSchemaVersion()).toBe(
+			THETA_LOCAL_STORAGE_SCHEMA_VERSION,
+		);
+		expect(restored?.session).toMatchObject({
+			id: "session-a",
+			workspaceId: "workspace-a",
+			title: "Durable",
+			metadata: { source: "test" },
+		});
+		expect(restored?.branch.id).toBe(fork.id);
+		expect(restored?.model).toMatchObject({ id: "gpt-4.1-nano" });
+		expect(restored?.thinkingLevel).toBe("high");
+		expect(restored?.messages).toEqual([
+			userMessage("root", 1),
+			userMessage("branch", 2),
+		]);
+		expect(restored?.entries.at(-1)).toMatchObject({
+			kind: "custom",
+			customType: "checkpoint",
+			data: { persisted: true },
+		});
+		expect(tree?.children[0]?.branch.title).toBe("Durable branch");
+
+		await pg.close();
 	});
 
 	it("can use the explicit in-memory store", async () => {
@@ -172,32 +224,4 @@ function fixedClock(start: number, step: number): () => number {
 		value += step;
 		return current;
 	};
-}
-
-class MemoryStorage implements Storage {
-	private readonly data = new Map<string, string>();
-
-	get length(): number {
-		return this.data.size;
-	}
-
-	clear(): void {
-		this.data.clear();
-	}
-
-	getItem(key: string): string | null {
-		return this.data.get(key) ?? null;
-	}
-
-	key(index: number): string | null {
-		return Array.from(this.data.keys())[index] ?? null;
-	}
-
-	removeItem(key: string): void {
-		this.data.delete(key);
-	}
-
-	setItem(key: string, value: string): void {
-		this.data.set(key, value);
-	}
 }

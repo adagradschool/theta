@@ -17,10 +17,13 @@ PGlite stores synced, queryable metadata:
 - file versions
 - content hashes
 - sizes and MIME types
+- sessions, branches, and session entries
 - migration state
 - future Electric sync cursors, conflict records, and pending operations
 
-The production adapter is `createPGliteWorkspaceMetadataStore(pg)`. It runs Theta's SQL migrations and uses transactions for compare-and-set metadata writes.
+The production workspace adapter is `createPGliteWorkspaceMetadataStore(pg)`. It runs Theta's SQL migrations and uses transactions for compare-and-set metadata writes.
+
+The durable session adapter is `createPGliteThetaSessionStore({ pg, metadata })`. It stores sessions, branches, and session entries in PGlite, so session restore uses the same durable browser control plane as workspace metadata.
 
 ## OPFS File Bytes
 
@@ -44,5 +47,7 @@ This keeps agent tools on the `WorkspaceFs` interface while allowing the storage
 - PGlite using `opfs-ahp://` inside a Web Worker
 - OPFS blob cache
 - `createLocalWorkspaceFs()`
+- `createPGliteThetaSessionStore()`
+- browser restart read-back from the same persistent Chrome profile
 
 This catches issues that DOM shims cannot, especially OPFS access-handle behavior.

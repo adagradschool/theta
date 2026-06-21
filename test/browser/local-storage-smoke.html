@@ -2,9 +2,11 @@
 <meta charset="utf-8" />
 <title>Theta Local Storage Smoke</title>
 <script type="module">
-	const worker = new Worker(new URL("./local-storage-worker.ts", import.meta.url), {
-		type: "module",
-	});
+	const parameters = new URL(window.location.href).searchParams;
+	const workerUrl = new URL("./local-storage-worker.ts", import.meta.url);
+	workerUrl.searchParams.set("name", parameters.get("name") ?? "default");
+	workerUrl.searchParams.set("phase", parameters.get("phase") ?? "write");
+	const worker = new Worker(workerUrl, { type: "module" });
 	worker.addEventListener("message", (event) => {
 		window.__thetaSmokeResult = event.data;
 	});

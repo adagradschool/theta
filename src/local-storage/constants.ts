@@ -6,7 +6,7 @@ export const THETA_LOCAL_STORAGE_STRATEGY = {
 	durableSync: "postgres-electric",
 } as const;
 
-export const THETA_LOCAL_STORAGE_SCHEMA_VERSION = 1;
+export const THETA_LOCAL_STORAGE_SCHEMA_VERSION = 2;
 
 export const THETA_LOCAL_STORAGE_MIGRATIONS: readonly ThetaStorageMigration[] =
 	[
@@ -47,6 +47,52 @@ on theta_workspace_entries (workspace_id, parent_path, name)`,
   created_at bigint not null,
   primary key (workspace_id, path, version)
 )`,
+			],
+		},
+		{
+			version: 2,
+			description:
+				"Create durable session, branch, and session entry metadata.",
+			sql: [
+				`create table if not exists theta_sessions (
+  id text primary key,
+  workspace_id text,
+  title text not null,
+  root_branch_id text not null,
+  active_branch_id text not null,
+  metadata_json text,
+  created_at bigint not null,
+  updated_at bigint not null,
+  deleted_at bigint
+)`,
+				`create index if not exists theta_sessions_workspace_idx
+on theta_sessions (workspace_id, updated_at)`,
+				`create table if not exists theta_session_branches (
+  id text primary key,
+  session_id text not null,
+  parent_branch_id text,
+  parent_entry_id text,
+  title text,
+  metadata_json text,
+  created_at bigint not null,
+  updated_at bigint not null
+)`,
+				`create index if not exists theta_session_branches_session_idx
+on theta_session_branches (session_id, created_at)`,
+				`create table if not exists theta_session_entries (
+  id text primary key,
+  session_id text not null,
+  branch_id text not null,
+  parent_entry_id text,
+  kind text not null check (kind in ('message', 'modelChange', 'thinkingLevelChange', 'custom')),
+  payload_json text not null,
+  metadata_json text,
+  created_at bigint not null
+)`,
+				`create index if not exists theta_session_entries_session_idx
+on theta_session_entries (session_id, created_at)`,
+				`create index if not exists theta_session_entries_branch_idx
+on theta_session_entries (session_id, branch_id, created_at)`,
 			],
 		},
 	];
