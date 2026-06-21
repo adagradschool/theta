@@ -13,6 +13,10 @@ import type {
 } from "./messages.ts";
 import type { ThetaToolDefinition } from "./tools.ts";
 import type { ThetaWorkspace } from "./workspace.ts";
+import {
+	createThetaAgentRuntime,
+	type CreateThetaAgentRuntimeOptions,
+} from "./agent-runtime.ts";
 
 export type ThetaQueueMode = "all" | "one-at-a-time";
 
@@ -73,6 +77,7 @@ export interface CreateThetaAgentOptions {
 	readonly tools?: readonly ThetaToolDefinition[];
 	readonly proxy?: ThetaLlmProxyConfig;
 	readonly runtime?: ThetaAgentRuntimeAdapter;
+	readonly runtimeOptions?: CreateThetaAgentRuntimeOptions;
 	readonly steeringMode?: ThetaQueueMode;
 	readonly followUpMode?: ThetaQueueMode;
 	readonly events?: ThetaEventListener<ThetaAgentEvent>;
@@ -112,7 +117,7 @@ export interface ThetaAgent {
 export class ThetaRuntimeNotConfiguredError extends Error {
 	constructor() {
 		super(
-			"Theta agent runtime is not configured. Pass a runtime adapter or use the Pi runtime integration.",
+			"Theta agent runtime is not configured. Pass a runtime adapter or runtime options.",
 		);
 		this.name = "ThetaRuntimeNotConfiguredError";
 	}
@@ -154,7 +159,8 @@ class ThetaAgentController implements ThetaAgent {
 		nextAgentId += 1;
 		this.workspace = options.workspace;
 		this.proxy = options.proxy;
-		this.runtime = options.runtime;
+		this.runtime =
+			options.runtime ?? createThetaAgentRuntime(options.runtimeOptions);
 		this.steeringMode = options.steeringMode ?? "one-at-a-time";
 		this.followUpMode = options.followUpMode ?? "one-at-a-time";
 		this.stateValue = {

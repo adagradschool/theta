@@ -5,7 +5,6 @@ import {
 	createMemoryWorkspaceFs,
 	createThetaWorkspace,
 	THETA_PACKAGE_INFO,
-	ThetaRuntimeNotConfiguredError,
 	type ThetaAgentRuntimeAdapter,
 	type ThetaMessage,
 } from "../src/index.ts";
@@ -117,15 +116,15 @@ describe("Theta public API", () => {
 		expect(agent.state.isStreaming).toBe(false);
 	});
 
-	it("fails clearly when no runtime adapter is configured", async () => {
+	it("fails clearly when the default runtime has no active model", async () => {
 		const workspace = createThetaWorkspace({
 			id: "workspace-3",
 			fs: createMemoryWorkspaceFs(),
 		});
 		const agent = createThetaAgent({ workspace });
 
-		await expect(agent.prompt("hello")).rejects.toBeInstanceOf(
-			ThetaRuntimeNotConfiguredError,
+		await expect(agent.prompt("hello")).rejects.toThrow(
+			"Theta agent runtime requires an active model.",
 		);
 	});
 });

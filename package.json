@@ -64,6 +64,8 @@
 		"vitest": "4.1.9"
 	},
 	"dependencies": {
+		"@earendil-works/pi-agent-core": "^0.79.9",
+		"@earendil-works/pi-ai": "^0.79.9",
 		"@electric-sql/pglite": "0.5.3"
 	}
 }

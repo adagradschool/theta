@@ -37,6 +37,7 @@ export {
 	THETA_LOCAL_STORAGE_STRATEGY,
 } from "./local-storage.ts";
 export { createMemoryWorkspaceFs } from "./memory-fs.ts";
+export { createThetaAgentRuntime } from "./agent-runtime.ts";
 export { createThetaWorkspace } from "./workspace.ts";
 export type {
 	CreateThetaAgentOptions,
@@ -47,6 +48,10 @@ export type {
 	ThetaPromptOptions,
 	ThetaQueueMode,
 } from "./agent.ts";
+export type {
+	CreateThetaAgentRuntimeOptions,
+	ThetaAgentStreamFunction,
+} from "./agent-runtime.ts";
 export type {
 	BlobBytes,
 	BlobCache,

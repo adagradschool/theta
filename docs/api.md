@@ -37,7 +37,7 @@ await agent.prompt("Add a README section for local development.");
 
 `createThetaWorkspace` is the file boundary. The agent, editor, file tree, browser tools, and shell layer should all use the same `WorkspaceFs`.
 
-`createThetaAgent` is the lifecycle boundary. It exposes Pi-style event flow, message state, steering/follow-up queues, aborts, and model/thinking controls while keeping the browser app decoupled from Pi internals.
+`createThetaAgent` is the lifecycle boundary. It exposes event flow, message state, steering/follow-up queues, aborts, and model/thinking controls while keeping the browser app decoupled from runtime internals.
 
 ## Stable Event Flow
 
@@ -55,13 +55,11 @@ UI consumers should switch on `event.type`.
 - `agent_end`
 - `agent_error`
 
-The event names intentionally mirror Pi's core agent events. Theta adds `agentId` and `workspaceId` to make multi-workspace UI state straightforward.
+Theta adds `agentId` and `workspaceId` to each agent event to make multi-workspace UI state straightforward.
 
 ## Runtime Adapter Boundary
 
-The current API defines the stable surface. The Pi runtime integration step will provide the default adapter behind this interface.
-
-Advanced tests and host apps can pass a `runtime` adapter directly:
+The default runtime is installed behind `createThetaAgent`. Advanced tests and host apps can still pass a `runtime` adapter directly:
 
 ```ts
 const agent = createThetaAgent({
