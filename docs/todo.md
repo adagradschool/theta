@@ -107,6 +107,8 @@ End goal: publish Theta as an npm package that can be pulled into any browser pr
 
 ## 10. Sessions
 
+Status: implemented locally with in-memory and browser `Storage`-backed stores, session restore, active branches, forked branches, model/thinking/custom/message entries, unit tests, and a persistence smoke test. This is not yet backed by PGlite/OPFS/Electric sync.
+
 1. Define session entry types.
 2. Define session tree and parent-child relationships.
 3. Implement an in-memory session manager.
@@ -119,7 +121,48 @@ End goal: publish Theta as an npm package that can be pulled into any browser pr
 10. Add session fork/branch behavior if needed.
 11. Add session tests.
 
-## 11. Compaction
+## 11. Durable Browser Persistence
+
+1. Replace the temporary browser `Storage` session store with a PGlite-backed store.
+2. Run PGlite on OPFS so workspace state survives reloads, browser restarts, and large local workspaces.
+3. Define the local durable schema for workspaces, file metadata, file manifests, sessions, branches, and session entries.
+4. Store file bytes as content-addressed blobs in OPFS, not inline database payloads.
+5. Store file metadata, directory indexes, versions, hashes, and sync state in PGlite.
+6. Implement a `WorkspaceFs` adapter over the PGlite metadata store and OPFS blob store.
+7. Implement atomic write flow: write blob, commit metadata transaction, then emit filesystem events.
+8. Add migration/version metadata for local schema changes.
+9. Add quota, storage-estimate, and large-file behavior checks for workspaces in the 100s of MB range.
+10. Add real-browser persistence tests with headless Chrome that verify data survives page reload and context restart.
+
+## 12. Content-Addressed Blob Sync
+
+1. Define blob identity as hash plus size and content type where useful.
+2. Define file manifest records that map paths and versions to blob identities.
+3. Define a minimal blob-store interface for upload, download, exists/head, and delete/garbage collection.
+4. Add a cheap stateless server helper for blob transfer, backed by R2/S3-compatible storage or a host-provided implementation.
+5. Upload missing local blobs after metadata commits.
+6. Download missing remote blobs before exposing synced files as readable.
+7. Validate downloaded blobs by hash before committing them to OPFS.
+8. Track blob sync status separately from metadata sync status.
+9. Add retry, backoff, resumability, and cancellation for large blob transfers.
+10. Add garbage-collection rules for unreferenced local and remote blobs.
+11. Add browser integration tests for multi-file, binary-file, and large-file blob sync.
+
+## 13. Electric SQL Sync
+
+1. Define the Postgres schema for workspaces, file manifests, sessions, branches, session entries, devices, and sync metadata.
+2. Keep blob bytes out of Electric/Postgres; sync only metadata, manifests, hashes, versions, and blob references.
+3. Mirror the Postgres schema into PGlite-compatible local tables.
+4. Implement Electric shape subscriptions for workspace metadata, file manifests, sessions, and session entries.
+5. Implement local mutation recording for file operations and session operations.
+6. Sync local mutations through Electric/Postgres while preserving local-first writes.
+7. Add device identity and created-by-device metadata.
+8. Add sync status events for metadata sync, blob upload, blob download, conflicts, and offline state.
+9. Add offline, reconnect, and multi-device convergence behavior.
+10. Add tests that verify a file edit on one browser profile appears on another profile after Electric and blob sync complete.
+11. Add tests that verify sessions restore across devices.
+
+## 14. Compaction
 
 1. Port the browser-safe compaction concepts from Pi.
 2. Define compaction settings.
@@ -128,27 +171,13 @@ End goal: publish Theta as an npm package that can be pulled into any browser pr
 5. Implement summary prompt creation.
 6. Generate summaries through the LLM proxy.
 7. Store compaction entries in sessions.
-8. Restore context from compaction summaries.
-9. Add manual compaction API.
-10. Add automatic compaction thresholds.
-11. Add compaction tests with a faux model.
+8. Persist compaction entries through PGlite and sync them through Electric.
+9. Restore context from compaction summaries.
+10. Add manual compaction API.
+11. Add automatic compaction thresholds.
+12. Add compaction tests with a faux model.
 
-## 12. Electric Sync
-
-1. Define durable schema for workspaces.
-2. Define durable schema for workspace files.
-3. Define durable schema for sessions.
-4. Define durable schema for session entries.
-5. Implement Electric shape subscriptions.
-6. Map synced records into local browser storage.
-7. Sync local file mutations.
-8. Sync local session mutations.
-9. Add device identity.
-10. Add sync status events.
-11. Add offline and reconnect handling.
-12. Add sync integration tests.
-
-## 13. Conflict Handling
+## 15. Conflict Handling
 
 1. Add expected-version writes.
 2. Detect stale writes.
@@ -157,31 +186,34 @@ End goal: publish Theta as an npm package that can be pulled into any browser pr
 5. Surface conflicts through `WorkspaceFs`.
 6. Add conflict status events.
 7. Add conflict resolution helpers.
-8. Add conflict tests.
+8. Reconcile conflicts across PGlite metadata, OPFS blobs, and Electric-synced manifests.
+9. Add conflict tests.
 
-## 14. UI Integration Helpers
+## 16. UI Integration Helpers
 
 1. Define a headless state adapter for chat UIs.
 2. Define file tree event helpers.
 3. Define editor binding helpers.
 4. Define tool-render metadata.
 5. Define progress and working-state events.
-6. Add example React hooks only if they do not constrain the core package.
+6. Define persistence and sync status helpers.
+7. Add example React hooks only if they do not constrain the core package.
 
-## 15. Example App
+## 17. Example App
 
 1. Create a minimal example app.
 2. Wire the browser agent.
-3. Wire the local workspace filesystem.
+3. Wire the PGlite/OPFS-backed workspace filesystem.
 4. Wire browser tools.
 5. Wire the LLM proxy.
 6. Add a simple file tree.
 7. Add a simple editor.
 8. Add a chat panel.
 9. Add browser shell command execution.
-10. Add Electric sync in the example after the local-only flow works.
+10. Add local persistence smoke controls that survive reloads.
+11. Add blob sync and Electric sync in the example after the local-only flow works.
 
-## 16. Server Helpers
+## 18. Server Helpers
 
 1. Create an optional server entrypoint.
 2. Implement an LLM proxy handler.
@@ -190,9 +222,11 @@ End goal: publish Theta as an npm package that can be pulled into any browser pr
 5. Add app auth hook points.
 6. Add request validation.
 7. Add rate-limit hook points.
-8. Add deployment docs.
+8. Add optional stateless blob transfer helpers for R2/S3-compatible storage.
+9. Add Electric/Postgres deployment notes.
+10. Add deployment docs.
 
-## 17. Testing
+## 19. Testing
 
 1. Add unit tests for filesystem behavior.
 2. Add unit tests for tools.
@@ -202,9 +236,12 @@ End goal: publish Theta as an npm package that can be pulled into any browser pr
 6. Add integration tests for agent tool loops.
 7. Add browser bundle smoke tests.
 8. Add example app smoke tests.
-9. Add sync integration tests.
+9. Add real-browser OPFS/PGlite persistence tests.
+10. Add blob sync integration tests.
+11. Add Electric sync integration tests.
+12. Add multi-device convergence tests.
 
-## 18. Documentation
+## 20. Documentation
 
 1. Write installation docs.
 2. Write quick-start docs.
@@ -213,11 +250,13 @@ End goal: publish Theta as an npm package that can be pulled into any browser pr
 5. Write `WorkspaceFs` adapter docs.
 6. Write tool customization docs.
 7. Write session and compaction docs.
-8. Write Electric sync docs.
-9. Write conflict handling docs.
-10. Write example app walkthrough.
+8. Write PGlite/OPFS persistence docs.
+9. Write content-addressed blob sync docs.
+10. Write Electric sync docs.
+11. Write conflict handling docs.
+12. Write example app walkthrough.
 
-## 19. Publishing
+## 21. Publishing
 
 1. Confirm package name and scope.
 2. Confirm license.

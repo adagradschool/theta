@@ -62,6 +62,11 @@ export {
 	reconstructThetaProxyEvent,
 	streamThetaProxy,
 } from "./llm-proxy.ts";
+export {
+	createBrowserThetaSessionStore,
+	createMemoryThetaSessionStore,
+	createThetaSessionManager,
+} from "./sessions/index.ts";
 export { createThetaWorkspace } from "./workspace.ts";
 export type {
 	CreateThetaAgentOptions,
@@ -196,6 +201,28 @@ export {
 	thetaBashExecutionToText,
 } from "./messages.ts";
 export type { ThetaPackageInfo, ThetaRuntimeTarget } from "./runtime.ts";
+export type {
+	AppendThetaSessionCustomEntryOptions,
+	AppendThetaSessionEntryOptions,
+	CreateBrowserThetaSessionStoreOptions,
+	CreateThetaSessionManagerOptions,
+	CreateThetaSessionOptions,
+	ForkThetaSessionBranchOptions,
+	ThetaSessionBranch,
+	ThetaSessionBranchNode,
+	ThetaSessionCustomEntry,
+	ThetaSessionEntry,
+	ThetaSessionEntryBase,
+	ThetaSessionEntryKind,
+	ThetaSessionManager,
+	ThetaSessionMessageEntry,
+	ThetaSessionModelChangeEntry,
+	ThetaSessionRecord,
+	ThetaSessionRestore,
+	ThetaSessionSnapshot,
+	ThetaSessionStore,
+	ThetaSessionThinkingLevelChangeEntry,
+} from "./sessions/index.ts";
 export type {
 	ThetaToolDefinition,
 	ThetaToolExecutionContext,
