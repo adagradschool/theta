@@ -39,6 +39,21 @@ export {
 export { createMemoryWorkspaceFs } from "./memory-fs.ts";
 export { createThetaAgentRuntime } from "./agent-runtime.ts";
 export {
+	createThetaBrowserTools,
+	createThetaEditTool,
+	createThetaEditToolDefinition,
+	createThetaFindTool,
+	createThetaFindToolDefinition,
+	createThetaGrepTool,
+	createThetaGrepToolDefinition,
+	createThetaLsTool,
+	createThetaLsToolDefinition,
+	createThetaReadTool,
+	createThetaReadToolDefinition,
+	createThetaWriteTool,
+	createThetaWriteToolDefinition,
+} from "./browser-tools/index.ts";
+export {
 	encodeThetaProxyEvent,
 	reconstructThetaProxyEvent,
 	streamThetaProxy,
@@ -68,6 +83,32 @@ export type {
 	ContentHash,
 	CreateMemoryBlobStorageOptions,
 } from "./blob-sync.ts";
+export type {
+	ThetaBrowserToolName,
+	ThetaBrowserToolsOptions,
+	ThetaEditReplacement,
+	ThetaEditToolDetails,
+	ThetaEditToolInput,
+	ThetaEditToolOptions,
+	ThetaFindMatch,
+	ThetaFindToolDetails,
+	ThetaFindToolInput,
+	ThetaFindToolOptions,
+	ThetaGrepMatch,
+	ThetaGrepToolDetails,
+	ThetaGrepToolInput,
+	ThetaGrepToolOptions,
+	ThetaLsEntry,
+	ThetaLsToolDetails,
+	ThetaLsToolInput,
+	ThetaLsToolOptions,
+	ThetaReadToolDetails,
+	ThetaReadToolInput,
+	ThetaReadToolOptions,
+	ThetaWriteToolDetails,
+	ThetaWriteToolInput,
+	ThetaWriteToolOptions,
+} from "./browser-tools/index.ts";
 export type {
 	ThetaAgentEvent,
 	ThetaEvent,
