@@ -2,6 +2,7 @@ import type { FileStat } from "../filesystem.ts";
 import type { JsonObject } from "../json.ts";
 
 export type ThetaBrowserToolName =
+	| "bash"
 	| "read"
 	| "write"
 	| "edit"
@@ -11,6 +12,7 @@ export type ThetaBrowserToolName =
 
 export interface ThetaBrowserToolsOptions {
 	readonly include?: readonly ThetaBrowserToolName[];
+	readonly bash?: import("../bash-tool/index.ts").ThetaBashToolOptions;
 	readonly read?: ThetaReadToolOptions;
 	readonly write?: ThetaWriteToolOptions;
 	readonly edit?: ThetaEditToolOptions;

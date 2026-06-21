@@ -11,7 +11,7 @@ Electric and Postgres are implementation details below a browser workspace files
 ```text
 Browser UI
   -> pi-agent-core Agent
-  -> browser tools and just-bash
+  -> browser tools and just-bash-lite
   -> WorkspaceFs
   -> IndexedDB or OPFS local cache
   -> Electric sync
@@ -75,7 +75,7 @@ interface WorkspaceFs {
 }
 ```
 
-`WorkspaceFs` is the boundary between agent behavior and storage/sync implementation. The editor, file tree, browser tools, and `just-bash` should all use the same interface.
+`WorkspaceFs` is the boundary between agent behavior and storage/sync implementation. The editor, file tree, browser tools, and browser shell should all use the same interface.
 
 ## Tool Mapping
 
@@ -85,9 +85,9 @@ interface WorkspaceFs {
 - `ls`: `WorkspaceFs.readdir`
 - `grep`: browser-side search over the local workspace cache
 - `find`: browser-side path index query
-- `bash`: `just-bash` wired to the same `WorkspaceFs`
+- `bash`: vendored `just-bash-lite` wired to the same `WorkspaceFs`
 
-`just-bash` is the browser shell execution layer. It is not a host shell and should not be treated as one.
+`just-bash-lite` is the browser shell execution layer. It is not a host shell and should not be treated as one. Theta vendors the small command surface it needs instead of depending on the full upstream `just-bash` package.
 
 ## Sync Model
 
@@ -167,7 +167,7 @@ The system should not silently overwrite remote edits.
 2. Thin LLM proxy.
 3. `WorkspaceFs` over IndexedDB or OPFS.
 4. Browser-native file tools.
-5. `just-bash` integration against `WorkspaceFs`.
+5. `just-bash-lite` integration against `WorkspaceFs`.
 6. Browser session manager.
 7. Compaction.
 8. Electric/Postgres sync.

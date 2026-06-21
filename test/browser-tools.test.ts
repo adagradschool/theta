@@ -34,6 +34,7 @@ describe("Theta browser tools", () => {
 		const harness = await createHarness();
 
 		expect([...harness.tools.keys()]).toEqual([
+			"bash",
 			"read",
 			"write",
 			"edit",

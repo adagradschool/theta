@@ -1,3 +1,7 @@
+import {
+	createThetaBashTool,
+	createThetaBashToolDefinition,
+} from "../bash-tool/index.ts";
 import type { ThetaToolDefinition, ThetaToolFactory } from "../tools.ts";
 import { createThetaEditTool, createThetaEditToolDefinition } from "./edit.ts";
 import { createThetaFindTool, createThetaFindToolDefinition } from "./find.ts";
@@ -11,6 +15,7 @@ import {
 } from "./write.ts";
 
 const DEFAULT_BROWSER_TOOL_NAMES = [
+	"bash",
 	"read",
 	"write",
 	"edit",
@@ -25,6 +30,9 @@ export function createThetaBrowserTools(
 	return ({ fs }) => {
 		const include = new Set(options.include ?? DEFAULT_BROWSER_TOOL_NAMES);
 		const tools: ThetaToolDefinition[] = [];
+		if (include.has("bash")) {
+			tools.push(createThetaBashToolDefinition(fs, options.bash));
+		}
 		if (include.has("read")) {
 			tools.push(createThetaReadToolDefinition(fs, options.read));
 		}
@@ -48,6 +56,8 @@ export function createThetaBrowserTools(
 }
 
 export {
+	createThetaBashTool,
+	createThetaBashToolDefinition,
 	createThetaEditTool,
 	createThetaEditToolDefinition,
 	createThetaFindTool,
@@ -61,6 +71,13 @@ export {
 	createThetaWriteTool,
 	createThetaWriteToolDefinition,
 };
+
+export type {
+	ThetaBashOutputTruncation,
+	ThetaBashToolDetails,
+	ThetaBashToolInput,
+	ThetaBashToolOptions,
+} from "../bash-tool/index.ts";
 
 export type {
 	ThetaBrowserToolName,

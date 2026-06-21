@@ -95,8 +95,8 @@ End goal: publish Theta as an npm package that can be pulled into any browser pr
 
 ## 9. just-bash Integration
 
-1. Add `just-bash` dependency.
-2. Build a `WorkspaceFs` adapter for `just-bash`.
+1. Vendor a slim browser shell instead of adding the full `just-bash` dependency.
+2. Build a `WorkspaceFs` adapter for the browser shell.
 3. Implement the `bash` tool.
 4. Capture stdout, stderr, exit code, and cancellation state.
 5. Add command timeout support.
@@ -178,7 +178,7 @@ End goal: publish Theta as an npm package that can be pulled into any browser pr
 6. Add a simple file tree.
 7. Add a simple editor.
 8. Add a chat panel.
-9. Add `just-bash` command execution.
+9. Add browser shell command execution.
 10. Add Electric sync in the example after the local-only flow works.
 
 ## 16. Server Helpers

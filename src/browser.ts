@@ -39,6 +39,10 @@ export {
 export { createMemoryWorkspaceFs } from "./memory-fs.ts";
 export { createThetaAgentRuntime } from "./agent-runtime.ts";
 export {
+	createThetaBashTool,
+	createThetaBashToolDefinition,
+} from "./bash-tool/index.ts";
+export {
 	createThetaBrowserTools,
 	createThetaEditTool,
 	createThetaEditToolDefinition,
@@ -72,6 +76,12 @@ export type {
 	CreateThetaAgentRuntimeOptions,
 	ThetaAgentStreamFunction,
 } from "./agent-runtime.ts";
+export type {
+	ThetaBashOutputTruncation,
+	ThetaBashToolDetails,
+	ThetaBashToolInput,
+	ThetaBashToolOptions,
+} from "./bash-tool/index.ts";
 export type {
 	BlobBytes,
 	BlobCache,
