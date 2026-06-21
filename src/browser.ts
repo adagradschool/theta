@@ -26,6 +26,16 @@ export {
 	WorkspaceNotFoundError,
 	WorkspacePermissionError,
 } from "./filesystem.ts";
+export {
+	createLocalWorkspaceFs,
+	createMemoryLocalWorkspaceFs,
+	createMemoryPGliteWorkspaceMetadataStore,
+	createOpfsBlobCache,
+	createPGliteWorkspaceMetadataStore,
+	THETA_LOCAL_STORAGE_MIGRATIONS,
+	THETA_LOCAL_STORAGE_SCHEMA_VERSION,
+	THETA_LOCAL_STORAGE_STRATEGY,
+} from "./local-storage.ts";
 export { createMemoryWorkspaceFs } from "./memory-fs.ts";
 export { createThetaWorkspace } from "./workspace.ts";
 export type {
@@ -65,6 +75,18 @@ export type {
 	WorkspaceFs,
 	WriteOptions,
 } from "./filesystem.ts";
+export type {
+	CreateLocalWorkspaceFsOptions,
+	CreateMemoryLocalWorkspaceFsOptions,
+	CreateMemoryPGliteWorkspaceMetadataStoreOptions,
+	CreateOpfsBlobCacheOptions,
+	LocalWorkspaceEntryKind,
+	LocalWorkspaceEntryRecord,
+	LocalWorkspaceFileVersionRecord,
+	PGliteWorkspaceMetadataStore,
+	PutLocalWorkspaceEntryOptions,
+	ThetaStorageMigration,
+} from "./local-storage.ts";
 export type { CreateMemoryWorkspaceFsOptions } from "./memory-fs.ts";
 export type {
 	JsonArray,

@@ -1,0 +1,17 @@
+<!doctype html>
+<meta charset="utf-8" />
+<title>Theta Local Storage Smoke</title>
+<script type="module">
+	const worker = new Worker(new URL("./local-storage-worker.ts", import.meta.url), {
+		type: "module",
+	});
+	worker.addEventListener("message", (event) => {
+		window.__thetaSmokeResult = event.data;
+	});
+	worker.addEventListener("error", (event) => {
+		window.__thetaSmokeResult = {
+			ok: false,
+			error: event.message,
+		};
+	});
+</script>
