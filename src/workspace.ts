@@ -44,6 +44,7 @@ class ThetaWorkspaceController implements ThetaWorkspace {
 	readonly metadata: JsonObject;
 	private readonly tools: readonly ThetaToolInput[];
 	private readonly emitter = new ThetaEmitter<ThetaWorkspaceEvent>();
+	private readonly unwatchFs: () => void;
 	private disposed = false;
 
 	constructor(options: CreateThetaWorkspaceOptions) {
@@ -56,6 +57,13 @@ class ThetaWorkspaceController implements ThetaWorkspace {
 		if (options.events) {
 			this.subscribe(options.events);
 		}
+		this.unwatchFs = this.fs.watch("/", (event) => {
+			void this.emitter.emit({
+				type: "fs_event",
+				workspaceId: this.id,
+				event,
+			});
+		});
 		queueMicrotask(() => {
 			void this.emitter.emit({
 				type: "workspace_created",
@@ -94,6 +102,7 @@ class ThetaWorkspaceController implements ThetaWorkspace {
 			return;
 		}
 		this.disposed = true;
+		this.unwatchFs();
 		void this.emitter.emit({
 			type: "workspace_disposed",
 			workspaceId: this.id,

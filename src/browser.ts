@@ -1,5 +1,20 @@
 export { THETA_PACKAGE_INFO } from "./runtime.ts";
 export { createThetaAgent, ThetaRuntimeNotConfiguredError } from "./agent.ts";
+export {
+	decodeWorkspaceText,
+	dirnameWorkspacePath,
+	encodeWorkspaceText,
+	normalizeWorkspacePath,
+	WorkspaceAlreadyExistsError,
+	WorkspaceConflictError,
+	WorkspaceFsError,
+	WorkspaceInvalidPathError,
+	WorkspaceIsDirectoryError,
+	WorkspaceNotDirectoryError,
+	WorkspaceNotFoundError,
+	WorkspacePermissionError,
+} from "./filesystem.ts";
+export { createMemoryWorkspaceFs } from "./memory-fs.ts";
 export { createThetaWorkspace } from "./workspace.ts";
 export type {
 	CreateThetaAgentOptions,
@@ -20,10 +35,14 @@ export type {
 	DirEntry,
 	FileStat,
 	FsEvent,
+	FsEventKind,
 	WorkspaceEntryKind,
+	WorkspaceFsErrorCode,
+	WorkspacePath,
 	WorkspaceFs,
 	WriteOptions,
 } from "./filesystem.ts";
+export type { CreateMemoryWorkspaceFsOptions } from "./memory-fs.ts";
 export type {
 	JsonArray,
 	JsonObject,

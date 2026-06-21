@@ -2,12 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import {
 	createThetaAgent,
+	createMemoryWorkspaceFs,
 	createThetaWorkspace,
 	THETA_PACKAGE_INFO,
 	ThetaRuntimeNotConfiguredError,
 	type ThetaAgentRuntimeAdapter,
 	type ThetaMessage,
-	type WorkspaceFs,
 } from "../src/index.ts";
 
 describe("Theta package metadata", () => {
@@ -18,38 +18,12 @@ describe("Theta package metadata", () => {
 	});
 });
 
-function createNullFs(): WorkspaceFs {
-	return {
-		async readFile() {
-			return new Uint8Array();
-		},
-		async writeFile() {},
-		async delete() {},
-		async rename() {},
-		async mkdir() {},
-		async readdir() {
-			return [];
-		},
-		async stat(path) {
-			return {
-				path,
-				kind: "file",
-				size: 0,
-				mtime: 0,
-			};
-		},
-		watch() {
-			return () => {};
-		},
-	};
-}
-
 describe("Theta public API", () => {
 	it("creates a workspace and agent with stable identifiers", () => {
 		const workspace = createThetaWorkspace({
 			id: "workspace-1",
 			name: "Workspace 1",
-			fs: createNullFs(),
+			fs: createMemoryWorkspaceFs(),
 		});
 		const agent = createThetaAgent({
 			id: "agent-1",
@@ -68,7 +42,7 @@ describe("Theta public API", () => {
 	it("routes prompt input through the runtime adapter and emits lifecycle events", async () => {
 		const workspace = createThetaWorkspace({
 			id: "workspace-2",
-			fs: createNullFs(),
+			fs: createMemoryWorkspaceFs(),
 		});
 		const seenEvents: string[] = [];
 		const runtime: ThetaAgentRuntimeAdapter = {
@@ -146,7 +120,7 @@ describe("Theta public API", () => {
 	it("fails clearly when no runtime adapter is configured", async () => {
 		const workspace = createThetaWorkspace({
 			id: "workspace-3",
-			fs: createNullFs(),
+			fs: createMemoryWorkspaceFs(),
 		});
 		const agent = createThetaAgent({ workspace });
 
