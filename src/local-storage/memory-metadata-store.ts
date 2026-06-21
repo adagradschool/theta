@@ -1,6 +1,6 @@
 import {
 	WorkspaceAlreadyExistsError,
-	WorkspaceConflictError,
+	WorkspaceStaleWriteError,
 	normalizeWorkspacePath,
 } from "../filesystem.ts";
 import { THETA_LOCAL_STORAGE_SCHEMA_VERSION } from "./constants.ts";
@@ -94,9 +94,10 @@ class MemoryPGliteWorkspaceMetadataStore
 			options.expectedVersion !== undefined &&
 			existing.version !== options.expectedVersion
 		) {
-			throw new WorkspaceConflictError(
+			throw new WorkspaceStaleWriteError(
 				entry.path,
-				`Expected version ${options.expectedVersion} for ${entry.path}, found ${existing.version}.`,
+				options.expectedVersion,
+				existing.version,
 			);
 		}
 		this.entries.set(key, cloneEntry(entry));

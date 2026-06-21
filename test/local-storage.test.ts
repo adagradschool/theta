@@ -7,7 +7,7 @@ import {
 	createMemoryPGliteWorkspaceMetadataStore,
 	THETA_LOCAL_STORAGE_SCHEMA_VERSION,
 	THETA_LOCAL_STORAGE_STRATEGY,
-	WorkspaceConflictError,
+	WorkspaceStaleWriteError,
 } from "../src/index.ts";
 
 describe("local browser storage strategy", () => {
@@ -87,6 +87,14 @@ describe("local browser storage strategy", () => {
 
 		await expect(
 			fs.writeTextFile("/file.txt", "two", { expectedVersion: "stale" }),
-		).rejects.toThrow(WorkspaceConflictError);
+		).rejects.toMatchObject({
+			name: "WorkspaceStaleWriteError",
+			path: "/file.txt",
+			expectedVersion: "stale",
+			actualVersion: "1",
+		});
+		await expect(
+			fs.writeTextFile("/file.txt", "two", { expectedVersion: "stale" }),
+		).rejects.toBeInstanceOf(WorkspaceStaleWriteError);
 	});
 });

@@ -47,6 +47,51 @@ export interface LocalWorkspaceFileVersionRecord {
 	readonly createdAt: number;
 }
 
+export type ThetaWorkspaceMutationKind =
+	| "putEntry"
+	| "recordFileVersion"
+	| "deleteEntry";
+
+export type ThetaWorkspaceMutationPayload =
+	| {
+			readonly kind: "putEntry";
+			readonly entry: LocalWorkspaceEntryRecord;
+			readonly expectedVersion?: string;
+	  }
+	| {
+			readonly kind: "recordFileVersion";
+			readonly version: LocalWorkspaceFileVersionRecord;
+	  }
+	| {
+			readonly kind: "deleteEntry";
+			readonly workspaceId: string;
+			readonly path: string;
+			readonly expectedVersion?: string;
+	  };
+
+export interface ThetaWorkspaceMutationRecord {
+	readonly id: string;
+	readonly workspaceId: string;
+	readonly kind: ThetaWorkspaceMutationKind;
+	readonly payload: ThetaWorkspaceMutationPayload;
+	readonly attempts: number;
+	readonly lastError?: string;
+	readonly createdAt: number;
+	readonly updatedAt: number;
+}
+
+export interface ThetaWorkspaceMutationQueue {
+	enqueue(
+		mutations: readonly ThetaWorkspaceMutationPayload[],
+	): Promise<readonly ThetaWorkspaceMutationRecord[]>;
+	listPending(
+		workspaceId: string,
+		limit?: number,
+	): Promise<readonly ThetaWorkspaceMutationRecord[]>;
+	markSynced(ids: readonly string[]): Promise<void>;
+	markFailed(id: string, error: string): Promise<void>;
+}
+
 export interface PutLocalWorkspaceEntryOptions {
 	readonly expectedVersion?: string;
 	readonly overwrite?: boolean;
@@ -87,6 +132,7 @@ export interface CreateLocalWorkspaceFsOptions {
 	readonly workspaceId: string;
 	readonly metadata: PGliteWorkspaceMetadataStore;
 	readonly blobs: BlobCache;
+	readonly mutationQueue?: ThetaWorkspaceMutationQueue;
 	readonly deviceId?: string;
 	readonly now?: () => number;
 }

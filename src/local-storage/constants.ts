@@ -6,7 +6,7 @@ export const THETA_LOCAL_STORAGE_STRATEGY = {
 	durableSync: "postgres-electric",
 } as const;
 
-export const THETA_LOCAL_STORAGE_SCHEMA_VERSION = 4;
+export const THETA_LOCAL_STORAGE_SCHEMA_VERSION = 5;
 
 export const THETA_LOCAL_STORAGE_MIGRATIONS: readonly ThetaStorageMigration[] =
 	[
@@ -121,6 +121,24 @@ add column if not exists updated_by_device_id text`,
 add column if not exists created_by_device_id text`,
 				`create index if not exists theta_workspace_entries_blob_status_idx
 on theta_workspace_entries (workspace_id, blob_sync_status)`,
+			],
+		},
+		{
+			version: 5,
+			description: "Create durable workspace mutation queue.",
+			sql: [
+				`create table if not exists theta_workspace_mutation_queue (
+  id text primary key,
+  workspace_id text not null,
+  kind text not null check (kind in ('putEntry', 'recordFileVersion', 'deleteEntry')),
+  payload_json text not null,
+  attempts integer not null default 0,
+  last_error text,
+  created_at bigint not null,
+  updated_at bigint not null
+)`,
+				`create index if not exists theta_workspace_mutation_queue_workspace_idx
+on theta_workspace_mutation_queue (workspace_id, created_at)`,
 			],
 		},
 	];

@@ -12,6 +12,7 @@ import {
 	WorkspaceIsDirectoryError,
 	WorkspaceNotDirectoryError,
 	WorkspaceNotFoundError,
+	WorkspaceStaleWriteError,
 	normalizeWorkspacePath,
 	type WriteOptions,
 } from "../filesystem.ts";
@@ -27,6 +28,8 @@ import type {
 	CreateLocalWorkspaceFsOptions,
 	LocalWorkspaceEntryRecord,
 	PGliteWorkspaceMetadataStore,
+	ThetaWorkspaceMutationPayload,
+	ThetaWorkspaceMutationQueue,
 } from "./types.ts";
 
 export function createLocalWorkspaceFs(
@@ -39,6 +42,7 @@ class LocalWorkspaceFs implements WorkspaceFs {
 	private readonly workspaceId: string;
 	private readonly metadata: PGliteWorkspaceMetadataStore;
 	private readonly blobs: BlobCache;
+	private readonly mutationQueue: ThetaWorkspaceMutationQueue | undefined;
 	private readonly deviceId: string | undefined;
 	private readonly now: () => number;
 	private readonly watchers = new Map<string, Set<(event: FsEvent) => void>>();
@@ -48,6 +52,7 @@ class LocalWorkspaceFs implements WorkspaceFs {
 		this.workspaceId = options.workspaceId;
 		this.metadata = options.metadata;
 		this.blobs = options.blobs;
+		this.mutationQueue = options.mutationQueue;
 		this.deviceId = options.deviceId;
 		this.now = options.now ?? Date.now;
 	}
@@ -97,9 +102,10 @@ class LocalWorkspaceFs implements WorkspaceFs {
 			options.expectedVersion !== undefined &&
 			existing.version !== options.expectedVersion
 		) {
-			throw new WorkspaceConflictError(
+			throw new WorkspaceStaleWriteError(
 				normalized,
-				`Expected version ${options.expectedVersion} for ${normalized}, found ${existing.version}.`,
+				options.expectedVersion,
+				existing.version,
 			);
 		}
 
@@ -144,6 +150,29 @@ class LocalWorkspaceFs implements WorkspaceFs {
 				: {}),
 			createdAt: timestamp,
 		});
+		await this.enqueueMutations([
+			{
+				kind: "putEntry",
+				entry,
+				...(existing?.version !== undefined
+					? { expectedVersion: existing.version }
+					: {}),
+			},
+			{
+				kind: "recordFileVersion",
+				version: {
+					workspaceId: this.workspaceId,
+					path: normalized,
+					version,
+					contentHash: blob.hash,
+					size: blob.size,
+					...(this.deviceId !== undefined
+						? { createdByDeviceId: this.deviceId }
+						: {}),
+					createdAt: timestamp,
+				},
+			},
+		]);
 		await this.touchParent(normalized);
 		this.emit({
 			type: existing ? "updated" : "created",
@@ -183,6 +212,14 @@ class LocalWorkspaceFs implements WorkspaceFs {
 			}
 		}
 		await this.metadata.deleteEntry(this.workspaceId, normalized);
+		await this.enqueueMutations([
+			{
+				kind: "deleteEntry",
+				workspaceId: this.workspaceId,
+				path: normalized,
+				expectedVersion: entry.version,
+			},
+		]);
 		await this.touchParent(normalized);
 		this.emit({ type: "deleted", path: normalized });
 	}
@@ -291,6 +328,7 @@ class LocalWorkspaceFs implements WorkspaceFs {
 				: {}),
 		});
 		await this.metadata.putEntry(entry, { overwrite: false });
+		await this.enqueueMutations([{ kind: "putEntry", entry }]);
 		await this.touchParent(normalized);
 		this.emit({ type: "created", path: normalized, stat: toFileStat(entry) });
 	}
@@ -415,6 +453,12 @@ class LocalWorkspaceFs implements WorkspaceFs {
 			}),
 			{ expectedVersion: parent.version, overwrite: true },
 		);
+	}
+
+	private async enqueueMutations(
+		mutations: readonly ThetaWorkspaceMutationPayload[],
+	): Promise<void> {
+		await this.mutationQueue?.enqueue(mutations);
 	}
 
 	private emit(event: FsEvent): void {

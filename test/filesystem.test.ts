@@ -9,6 +9,7 @@ import {
 	WorkspaceIsDirectoryError,
 	WorkspaceNotDirectoryError,
 	WorkspaceNotFoundError,
+	WorkspaceStaleWriteError,
 	type FsEvent,
 } from "../src/index.ts";
 
@@ -99,7 +100,12 @@ describe("memory WorkspaceFs", () => {
 		).rejects.toThrow(WorkspaceAlreadyExistsError);
 		await expect(
 			fs.writeTextFile("/new.txt", "y", { expectedVersion: "stale" }),
-		).rejects.toThrow(WorkspaceConflictError);
+		).rejects.toMatchObject({
+			name: "WorkspaceStaleWriteError",
+			path: "/new.txt",
+			expectedVersion: "stale",
+			actualVersion: "1",
+		});
 		await expect(fs.readFile("/")).rejects.toThrow(WorkspaceIsDirectoryError);
 		await expect(fs.readdir("/new.txt")).rejects.toThrow(
 			WorkspaceNotDirectoryError,
@@ -171,5 +177,14 @@ describe("memory WorkspaceFs", () => {
 			"/src/main.ts",
 		]);
 		expect(rootEvents.at(-1)?.path).toBe("/src/main.ts");
+	});
+
+	it("surfaces stale writes as structured conflict errors", async () => {
+		const fs = createMemoryWorkspaceFs();
+		await fs.writeTextFile("/file.txt", "one");
+
+		await expect(
+			fs.writeTextFile("/file.txt", "two", { expectedVersion: "0" }),
+		).rejects.toBeInstanceOf(WorkspaceStaleWriteError);
 	});
 });

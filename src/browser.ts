@@ -27,6 +27,7 @@ export {
 	serializeThetaConversation,
 	shouldCompactThetaContext,
 } from "./compaction.ts";
+export { mergeThetaTextConflict } from "./conflicts.ts";
 export {
 	decodeWorkspaceText,
 	dirnameWorkspacePath,
@@ -40,13 +41,20 @@ export {
 	WorkspaceNotDirectoryError,
 	WorkspaceNotFoundError,
 	WorkspacePermissionError,
+	WorkspaceStaleWriteError,
 } from "./filesystem.ts";
+export {
+	flushThetaWorkspaceMutationQueue,
+	syncThetaElectricWorkspaceMetadata,
+	syncThetaWorkspaceToRemote,
+} from "./electric-sync.ts";
 export {
 	createLocalWorkspaceFs,
 	createMemoryLocalWorkspaceFs,
 	createMemoryPGliteWorkspaceMetadataStore,
 	createOpfsBlobCache,
 	createPGliteWorkspaceMetadataStore,
+	createPGliteWorkspaceMutationQueue,
 	THETA_LOCAL_STORAGE_MIGRATIONS,
 	THETA_LOCAL_STORAGE_SCHEMA_VERSION,
 	THETA_LOCAL_STORAGE_STRATEGY,
@@ -101,6 +109,11 @@ export type {
 	ThetaCompactionSummaryRequest,
 	ThetaContextUsageEstimate,
 } from "./compaction.ts";
+export type {
+	ThetaTextEditRange,
+	ThetaTextMergeInput,
+	ThetaTextMergeResult,
+} from "./conflicts.ts";
 export type {
 	ThetaAgentCompactionOptions,
 	CreateThetaAgentOptions,
@@ -167,6 +180,18 @@ export type {
 	ThetaWorkspaceEvent,
 } from "./events.ts";
 export type {
+	FlushThetaWorkspaceMutationQueueOptions,
+	FlushThetaWorkspaceMutationQueueResult,
+	SyncThetaElectricWorkspaceMetadataOptions,
+	SyncThetaWorkspaceToRemoteOptions,
+	SyncThetaWorkspaceToRemoteResult,
+	ThetaElectricShapeConfig,
+	ThetaWorkspaceMutationEndpointConfig,
+	ThetaWorkspaceMutationConflict,
+	ThetaWorkspaceMutationRequest,
+	ThetaWorkspaceMutationResponse,
+} from "./electric-sync.ts";
+export type {
 	DirEntry,
 	FileStat,
 	FsEvent,
@@ -181,6 +206,7 @@ export type {
 	CreateLocalWorkspaceFsOptions,
 	CreateMemoryLocalWorkspaceFsOptions,
 	CreateMemoryPGliteWorkspaceMetadataStoreOptions,
+	CreatePGliteWorkspaceMutationQueueOptions,
 	CreateOpfsBlobCacheOptions,
 	LocalBlobSyncStatus,
 	LocalWorkspaceEntryKind,
@@ -189,6 +215,10 @@ export type {
 	PGliteWorkspaceMetadataStore,
 	PutLocalWorkspaceEntryOptions,
 	ThetaStorageMigration,
+	ThetaWorkspaceMutationKind,
+	ThetaWorkspaceMutationPayload,
+	ThetaWorkspaceMutationQueue,
+	ThetaWorkspaceMutationRecord,
 } from "./local-storage.ts";
 export type {
 	ThetaProxyRequest,

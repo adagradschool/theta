@@ -12,6 +12,7 @@ import {
 	WorkspaceIsDirectoryError,
 	WorkspaceNotDirectoryError,
 	WorkspaceNotFoundError,
+	WorkspaceStaleWriteError,
 	normalizeWorkspacePath,
 	type WriteOptions,
 } from "./filesystem.ts";
@@ -294,9 +295,10 @@ class MemoryWorkspaceFs implements WorkspaceFs {
 			options.expectedVersion !== undefined &&
 			options.expectedVersion !== versionString(existing.version)
 		) {
-			throw new WorkspaceConflictError(
+			throw new WorkspaceStaleWriteError(
 				normalized,
-				`Expected version ${options.expectedVersion} for ${normalized}, found ${versionString(existing.version)}.`,
+				options.expectedVersion,
+				versionString(existing.version),
 			);
 		}
 

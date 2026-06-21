@@ -75,10 +75,17 @@ export async function syncThetaWorkspaceBlobsToStore(options: {
 	readonly metadata: PGliteWorkspaceMetadataStore;
 	readonly cache: BlobCache;
 	readonly store: BlobStore;
+	readonly contentHashes?: ReadonlySet<string>;
 }): Promise<readonly BlobTransferResult[]> {
 	const results: BlobTransferResult[] = [];
 	for (const entry of await options.metadata.listEntries(options.workspaceId)) {
 		if (entry.kind !== "file" || !entry.contentHash) {
+			continue;
+		}
+		if (
+			options.contentHashes !== undefined &&
+			!options.contentHashes.has(entry.contentHash)
+		) {
 			continue;
 		}
 		const result = await ensureBlobInStore(

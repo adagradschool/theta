@@ -157,6 +157,21 @@ export class WorkspaceConflictError extends WorkspaceFsError {
 	}
 }
 
+export class WorkspaceStaleWriteError extends WorkspaceConflictError {
+	readonly expectedVersion: string;
+	readonly actualVersion: string;
+
+	constructor(path: string, expectedVersion: string, actualVersion: string) {
+		super(
+			path,
+			`Expected version ${expectedVersion} for ${path}, found ${actualVersion}.`,
+		);
+		this.name = "WorkspaceStaleWriteError";
+		this.expectedVersion = expectedVersion;
+		this.actualVersion = actualVersion;
+	}
+}
+
 export class WorkspacePermissionError extends WorkspaceFsError {
 	constructor(path: string, message = `Workspace permission denied: ${path}`) {
 		super({ code: "permission_denied", path, message });

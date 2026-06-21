@@ -154,7 +154,7 @@ Status: first slice implemented with an HTTP blob-store client, host-provided he
 
 ## 13. Electric SQL Sync
 
-Status: first local shape boundary implemented as workspace manifest export/import over PGlite metadata, including device fields and blob status. This is not yet wired to Electric shape subscriptions or Postgres mutations.
+Status: first local shape boundary implemented as workspace manifest export/import over PGlite metadata, including device fields and blob status. Electric Cloud claimable Postgres+Sync is provisioned, the Cloudflare Worker proxies Electric shape reads with server-side source credentials, `syncThetaElectricWorkspaceMetadata()` syncs workspace entry/file-version shapes into PGlite, and `syncThetaWorkspaceToRemote()` uploads queued file blobs before flushing workspace metadata mutations through the Worker into Postgres. Session shapes, offline retry scheduling, and conflict reconciliation remain.
 
 1. Define the Postgres schema for workspaces, file manifests, sessions, branches, session entries, devices, and sync metadata.
 2. Keep blob bytes out of Electric/Postgres; sync only metadata, manifests, hashes, versions, and blob references.
@@ -186,6 +186,8 @@ Status: implemented with browser-safe token estimation, threshold helpers, turn-
 12. Add compaction tests with a faux model.
 
 ## 15. Conflict Handling
+
+Status: first slice implemented with structured stale-write errors for optimistic expected-version writes, ETag-style expected-version checks on server mutations, and a safe text merge helper for simple non-overlapping edits. Conflict artifact creation, sync reconciliation, UI conflict events, and resolution helpers remain.
 
 1. Add expected-version writes.
 2. Detect stale writes.

@@ -1,7 +1,7 @@
 import type { PGliteInterface } from "@electric-sql/pglite";
 import {
 	WorkspaceAlreadyExistsError,
-	WorkspaceConflictError,
+	WorkspaceStaleWriteError,
 	normalizeWorkspacePath,
 } from "../filesystem.ts";
 import {
@@ -116,9 +116,10 @@ order by path asc`,
 				options.expectedVersion !== undefined &&
 				existing.version !== options.expectedVersion
 			) {
-				throw new WorkspaceConflictError(
+				throw new WorkspaceStaleWriteError(
 					entry.path,
-					`Expected version ${options.expectedVersion} for ${entry.path}, found ${existing.version}.`,
+					options.expectedVersion,
+					existing.version,
 				);
 			}
 			await this.pg.query(
