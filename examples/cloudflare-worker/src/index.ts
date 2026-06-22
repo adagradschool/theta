@@ -1,4 +1,4 @@
-import { handleThetaLlmProxyRequest } from "@earendil-works/theta/server";
+import { handleThetaLlmProxyRequest } from "@adagradschool/theta/server";
 import {
 	neon,
 	type NeonQueryFunction,

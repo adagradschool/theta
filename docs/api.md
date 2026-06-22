@@ -9,7 +9,7 @@ import {
 	createThetaAgent,
 	createThetaWorkspace,
 	type WorkspaceFs,
-} from "@earendil-works/theta/browser";
+} from "@adagradschool/theta/browser";
 
 const fs: WorkspaceFs = createAppWorkspaceFs();
 
@@ -81,4 +81,4 @@ Runtime adapters must execute tools through `WorkspaceFs`, route LLM calls throu
 
 ## Server Entrypoint
 
-Server helpers are exported from `@earendil-works/theta/server`. Server code is responsible for authenticating app users and proxying model streams without exposing provider credentials to the browser.
+Server helpers are exported from `@adagradschool/theta/server`. Server code is responsible for authenticating app users and proxying model streams without exposing provider credentials to the browser.

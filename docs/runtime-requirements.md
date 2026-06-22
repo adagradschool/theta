@@ -1,6 +1,6 @@
 # Runtime Requirements
 
-Theta is published as `@earendil-works/theta`.
+Theta is published as `@adagradschool/theta`.
 
 ## Browser Runtime
 

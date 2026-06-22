@@ -1,5 +1,5 @@
 {
-	"name": "@earendil-works/theta",
+	"name": "@adagradschool/theta",
 	"version": "0.0.0",
 	"description": "Browser-first coding agent workspace runtime",
 	"type": "module",
@@ -48,11 +48,11 @@
 		"workspace",
 		"llm"
 	],
-	"author": "Earendil Works",
+	"author": "adagradschool",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/earendil-works/theta.git"
+		"url": "git+https://github.com/adagradschool/theta.git"
 	},
 	"publishConfig": {
 		"access": "public"

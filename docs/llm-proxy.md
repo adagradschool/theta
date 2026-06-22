@@ -66,4 +66,4 @@ data: {"type":"text_delta","contentIndex":0,"delta":"hello"}
 
 ## Server Helper
 
-`handleThetaLlmProxyRequest(request, options)` is a minimal helper exported from `@earendil-works/theta/server`. It accepts a standard `Request`, optionally calls `hooks.authenticate(request)`, streams provider output, and propagates request aborts through `request.signal`.
+`handleThetaLlmProxyRequest(request, options)` is a minimal helper exported from `@adagradschool/theta/server`. It accepts a standard `Request`, optionally calls `hooks.authenticate(request)`, streams provider output, and propagates request aborts through `request.signal`.

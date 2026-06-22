@@ -1,9 +1,9 @@
 import { useEffect, useState, type FormEvent } from "react";
 
-import {
-	type FileStat,
-	type ThetaAgent,
-	type ThetaWorkspace,
+import type {
+	FileStat,
+	ThetaAgent,
+	ThetaWorkspace,
 } from "../../../src/index.ts";
 import {
 	useThetaChat,

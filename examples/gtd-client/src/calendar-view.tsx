@@ -180,7 +180,7 @@ function toDateKey(date: Date): string {
 }
 
 function monthNumber(name: string): number | undefined {
-	const index = monthNames.findIndex((month) => month === name.toLowerCase());
+	const index = monthNames.indexOf(name.toLowerCase());
 	return index === -1 ? undefined : index + 1;
 }
 

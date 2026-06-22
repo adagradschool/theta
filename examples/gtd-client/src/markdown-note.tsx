@@ -7,13 +7,14 @@ export function MarkdownNote(props: {
 	return (
 		<div className="note-view" data-testid="note-view">
 			{lines.map((line, lineIndex) => {
+				const key = markdownLineKey(line, lineIndex);
 				const heading = /^(#{1,3})\s+(.+)$/u.exec(line);
 				if (heading) {
 					const level = heading[1]?.length ?? 1;
 					return (
 						<EditableLine
 							className={`note-heading level-${level}`}
-							key={lineIndex}
+							key={key}
 							value={heading[2] ?? ""}
 							onCommit={(content) => props.onUpdateLine(lineIndex, content)}
 						/>
@@ -23,7 +24,7 @@ export function MarkdownNote(props: {
 				if (task) {
 					const checked = task[2]?.toLowerCase() === "x";
 					return (
-						<label className="note-task" key={lineIndex}>
+						<label className="note-task" key={key}>
 							<input
 								type="checkbox"
 								checked={checked}
@@ -42,7 +43,7 @@ export function MarkdownNote(props: {
 				const bullet = /^-\s+(.+)$/u.exec(line);
 				if (bullet) {
 					return (
-						<div className="note-bullet" key={lineIndex}>
+						<div className="note-bullet" key={key}>
 							<span />
 							<EditableLine
 								className="note-bullet-text"
@@ -53,12 +54,12 @@ export function MarkdownNote(props: {
 					);
 				}
 				if (line.trim().length === 0) {
-					return <div className="note-space" key={lineIndex} />;
+					return <div className="note-space" key={key} />;
 				}
 				return (
 					<EditableLine
 						className="note-paragraph"
-						key={lineIndex}
+						key={key}
 						value={line}
 						onCommit={(content) => props.onUpdateLine(lineIndex, content)}
 					/>
@@ -74,25 +75,22 @@ function EditableLine(props: {
 	readonly onCommit: (content: string) => void;
 }) {
 	return (
-		<div
+		<input
 			className={`editable-line ${props.className}`}
-			contentEditable
-			role="textbox"
+			defaultValue={props.value}
 			spellCheck
-			suppressContentEditableWarning
-			tabIndex={0}
 			onBlur={(event) => {
-				const content = event.currentTarget.innerText
-					.replace(/\n/gu, " ")
-					.trim();
+				const content = event.currentTarget.value.replace(/\n/gu, " ").trim();
 				if (content !== props.value) {
 					props.onCommit(content);
 				}
 			}}
-		>
-			{props.value}
-		</div>
+		/>
 	);
+}
+
+function markdownLineKey(line: string, lineIndex: number): string {
+	return `${lineIndex}:${line}`;
 }
 
 export function replaceMarkdownLineContent(

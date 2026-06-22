@@ -5,14 +5,14 @@ export type ThetaRuntimeTarget =
 	| "safari-latest";
 
 export interface ThetaPackageInfo {
-	readonly name: "@earendil-works/theta";
+	readonly name: "@adagradschool/theta";
 	readonly browserOnly: true;
 	readonly serverProxyRequired: true;
 	readonly runtimeTargets: readonly ThetaRuntimeTarget[];
 }
 
 export const THETA_PACKAGE_INFO = {
-	name: "@earendil-works/theta",
+	name: "@adagradschool/theta",
 	browserOnly: true,
 	serverProxyRequired: true,
 	runtimeTargets: [

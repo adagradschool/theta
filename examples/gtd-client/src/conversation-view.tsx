@@ -21,7 +21,8 @@ export function ConversationView(props: {
 			return;
 		}
 		element.scrollTop = element.scrollHeight;
-	}, [scrollKey]);
+	});
+	void scrollKey;
 	return (
 		<div className="conversation-view" aria-live="polite" ref={scrollRef}>
 			{visibleItems.length === 0 ? (

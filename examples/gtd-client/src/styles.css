@@ -584,9 +584,15 @@ textarea:focus {
 }
 
 .editable-line {
+	display: block;
 	min-width: 0;
+	width: 100%;
+	border: 0;
 	outline: none;
+	background: transparent;
 	border-radius: 3px;
+	color: inherit;
+	font: inherit;
 }
 
 .editable-line:focus {
@@ -1211,10 +1217,10 @@ textarea:focus {
 	*,
 	*::before,
 	*::after {
-		animation-duration: 0.001ms !important;
-		animation-iteration-count: 1 !important;
-		scroll-behavior: auto !important;
-		transition-duration: 0.001ms !important;
+		animation-duration: 0.001ms;
+		animation-iteration-count: 1;
+		scroll-behavior: auto;
+		transition-duration: 0.001ms;
 	}
 }
 
