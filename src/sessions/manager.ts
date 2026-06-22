@@ -1,8 +1,8 @@
 import type {
 	ThetaCompactionSummaryMessage,
 	ThetaMessage,
-} from "../messages.ts";
-import type { ThetaModelRef, ThetaThinkingLevel } from "../model.ts";
+} from "../core/messages.ts";
+import type { ThetaModelRef, ThetaThinkingLevel } from "../core/model.ts";
 import { createMemoryThetaSessionStore } from "./store.ts";
 import type {
 	AppendThetaSessionCustomEntryOptions,
@@ -462,5 +462,13 @@ function withOptional<T extends object>(
 
 function createDefaultIdFactory(): () => string {
 	let next = 1;
-	return () => `theta-session-${next++}`;
+	return () => {
+		const randomUUID = globalThis.crypto?.randomUUID?.bind(globalThis.crypto);
+		if (randomUUID) {
+			return `theta-session-${randomUUID()}`;
+		}
+		const timestamp = Date.now().toString(36);
+		const random = Math.random().toString(36).slice(2);
+		return `theta-session-${timestamp}-${next++}-${random}`;
+	};
 }

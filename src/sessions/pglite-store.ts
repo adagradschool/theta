@@ -1,9 +1,9 @@
 import type { PGliteInterface } from "@electric-sql/pglite";
-import type { JsonObject, JsonValue } from "../json.ts";
+import type { JsonObject, JsonValue } from "../core/json.ts";
 import { THETA_LOCAL_STORAGE_SCHEMA_VERSION } from "../local-storage/constants.ts";
 import type { PGliteWorkspaceMetadataStore } from "../local-storage/types.ts";
-import type { ThetaMessage } from "../messages.ts";
-import type { ThetaModelRef, ThetaThinkingLevel } from "../model.ts";
+import type { ThetaMessage } from "../core/messages.ts";
+import type { ThetaModelRef, ThetaThinkingLevel } from "../core/model.ts";
 import type {
 	CreatePGliteThetaSessionStoreOptions,
 	ThetaSessionBranch,

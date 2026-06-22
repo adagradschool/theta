@@ -1,5 +1,5 @@
 import { Type } from "@earendil-works/pi-ai/base";
-import type { ThetaToolSchema } from "../tools.ts";
+import type { ThetaToolSchema } from "../core/tools.ts";
 
 export const thetaReadToolSchema = Type.Object({
 	path: Type.String({ description: "Workspace file path to read." }),

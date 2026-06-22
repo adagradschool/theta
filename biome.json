@@ -8,7 +8,14 @@
 		}
 	},
 	"files": {
-		"includes": ["**", "!dist", "!node_modules", "!coverage"]
+		"includes": [
+			"**",
+			"!dist",
+			"!node_modules",
+			"!coverage",
+			"!examples/gtd-client/dist",
+			"!examples/gtd-client/node_modules"
+		]
 	},
 	"formatter": {
 		"enabled": true,

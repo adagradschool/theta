@@ -8,7 +8,7 @@ import {
 	type ContentHash,
 	hashBlobBytes,
 	readBlobBytes,
-} from "../blob-sync.ts";
+} from "../sync/blob-sync.ts";
 import type { CreateOpfsBlobCacheOptions } from "./types.ts";
 
 export function createOpfsBlobCache(

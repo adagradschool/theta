@@ -3,7 +3,7 @@ import {
 	WorkspaceAlreadyExistsError,
 	WorkspaceStaleWriteError,
 	normalizeWorkspacePath,
-} from "../filesystem.ts";
+} from "../fs/filesystem.ts";
 import {
 	THETA_LOCAL_STORAGE_MIGRATIONS,
 	THETA_LOCAL_STORAGE_SCHEMA_VERSION,
@@ -17,7 +17,7 @@ import type {
 	PGliteWorkspaceMetadataStore,
 	PutLocalWorkspaceEntryOptions,
 } from "./types.ts";
-import type { ContentHash } from "../blob-sync.ts";
+import type { ContentHash } from "../sync/blob-sync.ts";
 
 export function createPGliteWorkspaceMetadataStore(
 	pg: Pick<PGliteInterface, "query" | "exec">,

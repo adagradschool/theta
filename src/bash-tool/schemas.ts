@@ -1,5 +1,5 @@
 import { Type } from "@earendil-works/pi-ai/base";
-import type { ThetaToolSchema } from "../tools.ts";
+import type { ThetaToolSchema } from "../core/tools.ts";
 
 export const thetaBashToolSchema = Type.Object({
 	command: Type.String({ description: "Bash command to execute." }),

@@ -1,4 +1,4 @@
-import type { JsonObject } from "../json.ts";
+import type { JsonObject } from "../core/json.ts";
 import type { JustBashLiteCustomCommand } from "../just-bash-lite/index.ts";
 
 export interface ThetaBashToolOptions {

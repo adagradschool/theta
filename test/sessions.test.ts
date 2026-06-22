@@ -193,6 +193,42 @@ describe("Theta sessions", () => {
 		await pg.close();
 	});
 
+	it("appends to a persisted session after manager restart without id collisions", async () => {
+		const pg = new PGlite();
+		const metadata = createPGliteWorkspaceMetadataStore(pg);
+		const store = createPGliteThetaSessionStore({ pg, metadata });
+		const manager = createThetaSessionManager({
+			store,
+			now: fixedClock(1000, 10),
+		});
+
+		const snapshot = await manager.createSession({
+			title: "Restarted",
+			workspaceId: "workspace-a",
+		});
+		await manager.appendMessage(snapshot.session.id, userMessage("before", 1));
+
+		const restoredManager = createThetaSessionManager({
+			store: createPGliteThetaSessionStore({ pg, metadata }),
+			now: fixedClock(2000, 10),
+		});
+		await restoredManager.appendMessage(
+			snapshot.session.id,
+			userMessage("after", 2),
+		);
+		const restored = await restoredManager.restore(snapshot.session.id);
+
+		expect(restored?.messages).toEqual([
+			userMessage("before", 1),
+			userMessage("after", 2),
+		]);
+		expect(new Set(restored?.entries.map((entry) => entry.id)).size).toBe(
+			restored?.entries.length,
+		);
+
+		await pg.close();
+	});
+
 	it("can use the explicit in-memory store", async () => {
 		const store = createMemoryThetaSessionStore();
 		const manager = createThetaSessionManager({

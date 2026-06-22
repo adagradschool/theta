@@ -1,4 +1,4 @@
-import type { JsonObject } from "./json.ts";
+import type { JsonObject } from "../core/json.ts";
 
 export type WorkspaceEntryKind = "file" | "directory";
 

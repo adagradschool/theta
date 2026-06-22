@@ -1,5 +1,8 @@
-export { THETA_PACKAGE_INFO } from "./runtime.ts";
-export { createThetaAgent, ThetaRuntimeNotConfiguredError } from "./agent.ts";
+export { THETA_PACKAGE_INFO } from "./core/runtime.ts";
+export {
+	createThetaAgent,
+	ThetaRuntimeNotConfiguredError,
+} from "./core/agent.ts";
 export {
 	BlobHashMismatchError,
 	BlobNotFoundError,
@@ -12,7 +15,7 @@ export {
 	readBlobBytes,
 	syncBlobsToCache,
 	syncBlobsToStore,
-} from "./blob-sync.ts";
+} from "./sync/blob-sync.ts";
 export {
 	DEFAULT_THETA_COMPACTION_SETTINGS,
 	THETA_COMPACTION_SYSTEM_PROMPT,
@@ -26,8 +29,8 @@ export {
 	prepareThetaCompaction,
 	serializeThetaConversation,
 	shouldCompactThetaContext,
-} from "./compaction.ts";
-export { mergeThetaTextConflict } from "./conflicts.ts";
+} from "./core/compaction.ts";
+export { mergeThetaTextConflict } from "./core/conflicts.ts";
 export {
 	decodeWorkspaceText,
 	dirnameWorkspacePath,
@@ -42,12 +45,12 @@ export {
 	WorkspaceNotFoundError,
 	WorkspacePermissionError,
 	WorkspaceStaleWriteError,
-} from "./filesystem.ts";
+} from "./fs/filesystem.ts";
 export {
 	flushThetaWorkspaceMutationQueue,
 	syncThetaElectricWorkspaceMetadata,
 	syncThetaWorkspaceToRemote,
-} from "./electric-sync.ts";
+} from "./sync/electric-sync.ts";
 export {
 	createLocalWorkspaceFs,
 	createMemoryLocalWorkspaceFs,
@@ -59,8 +62,8 @@ export {
 	THETA_LOCAL_STORAGE_SCHEMA_VERSION,
 	THETA_LOCAL_STORAGE_STRATEGY,
 } from "./local-storage.ts";
-export { createMemoryWorkspaceFs } from "./memory-fs.ts";
-export { createThetaAgentRuntime } from "./agent-runtime.ts";
+export { createMemoryWorkspaceFs } from "./fs/memory-fs.ts";
+export { createThetaAgentRuntime } from "./core/agent-runtime.ts";
 export {
 	createThetaBashTool,
 	createThetaBashToolDefinition,
@@ -84,7 +87,7 @@ export {
 	encodeThetaProxyEvent,
 	reconstructThetaProxyEvent,
 	streamThetaProxy,
-} from "./llm-proxy.ts";
+} from "./llm/llm-proxy.ts";
 export {
 	createMemoryThetaSessionStore,
 	createPGliteThetaSessionStore,
@@ -96,7 +99,7 @@ export {
 	importThetaWorkspaceManifest,
 	syncThetaWorkspaceBlobsToCache,
 	syncThetaWorkspaceBlobsToStore,
-} from "./workspace-sync.ts";
+} from "./sync/workspace-sync.ts";
 export {
 	applyThetaFileTreeEvent,
 	createThetaChatState,
@@ -108,8 +111,8 @@ export {
 	reduceThetaSyncState,
 	toolRenderItemFromEvent,
 	toolRenderItemFromResult,
-} from "./ui-state.ts";
-export { createThetaWorkspace } from "./workspace.ts";
+} from "./ui/ui-state.ts";
+export { createThetaWorkspace } from "./core/workspace.ts";
 export type {
 	CompactThetaSessionOptions,
 	CompactThetaSessionResult,
@@ -120,12 +123,12 @@ export type {
 	ThetaCompactionSummaryFunction,
 	ThetaCompactionSummaryRequest,
 	ThetaContextUsageEstimate,
-} from "./compaction.ts";
+} from "./core/compaction.ts";
 export type {
 	ThetaTextEditRange,
 	ThetaTextMergeInput,
 	ThetaTextMergeResult,
-} from "./conflicts.ts";
+} from "./core/conflicts.ts";
 export type {
 	ThetaAgentCompactionOptions,
 	CreateThetaAgentOptions,
@@ -136,11 +139,11 @@ export type {
 	ThetaAgentState,
 	ThetaPromptOptions,
 	ThetaQueueMode,
-} from "./agent.ts";
+} from "./core/agent.ts";
 export type {
 	CreateThetaAgentRuntimeOptions,
 	ThetaAgentStreamFunction,
-} from "./agent-runtime.ts";
+} from "./core/agent-runtime.ts";
 export type {
 	ThetaBashOutputTruncation,
 	ThetaBashToolDetails,
@@ -158,7 +161,7 @@ export type {
 	ContentHash,
 	CreateHttpBlobStoreOptions,
 	CreateMemoryBlobStorageOptions,
-} from "./blob-sync.ts";
+} from "./sync/blob-sync.ts";
 export type {
 	ThetaBrowserToolName,
 	ThetaBrowserToolsOptions,
@@ -190,7 +193,7 @@ export type {
 	ThetaEvent,
 	ThetaEventListener,
 	ThetaWorkspaceEvent,
-} from "./events.ts";
+} from "./core/events.ts";
 export type {
 	FlushThetaWorkspaceMutationQueueOptions,
 	FlushThetaWorkspaceMutationQueueResult,
@@ -202,7 +205,7 @@ export type {
 	ThetaWorkspaceMutationConflict,
 	ThetaWorkspaceMutationRequest,
 	ThetaWorkspaceMutationResponse,
-} from "./electric-sync.ts";
+} from "./sync/electric-sync.ts";
 export type {
 	DirEntry,
 	FileStat,
@@ -213,7 +216,7 @@ export type {
 	WorkspacePath,
 	WorkspaceFs,
 	WriteOptions,
-} from "./filesystem.ts";
+} from "./fs/filesystem.ts";
 export type {
 	CreateLocalWorkspaceFsOptions,
 	CreateMemoryLocalWorkspaceFsOptions,
@@ -237,20 +240,20 @@ export type {
 	ThetaProxySerializableOptions,
 	ThetaProxyStreamEvent,
 	ThetaStreamProxyOptions,
-} from "./llm-proxy.ts";
-export type { CreateMemoryWorkspaceFsOptions } from "./memory-fs.ts";
+} from "./llm/llm-proxy.ts";
+export type { CreateMemoryWorkspaceFsOptions } from "./fs/memory-fs.ts";
 export type {
 	JsonArray,
 	JsonObject,
 	JsonPrimitive,
 	JsonValue,
-} from "./json.ts";
+} from "./core/json.ts";
 export type {
 	ThetaLlmProxyConfig,
 	ThetaModelRef,
 	ThetaThinkingLevel,
 	ThetaTransport,
-} from "./model.ts";
+} from "./core/model.ts";
 export type {
 	ThetaAppMessage,
 	ThetaAssistantMessage,
@@ -269,7 +272,7 @@ export type {
 	ThetaToolResultMessage,
 	ThetaUsage,
 	ThetaUserMessage,
-} from "./messages.ts";
+} from "./core/messages.ts";
 export {
 	convertThetaMessageToLlm,
 	convertThetaMessagesToLlm,
@@ -278,8 +281,8 @@ export {
 	THETA_COMPACTION_SUMMARY_PREFIX,
 	THETA_COMPACTION_SUMMARY_SUFFIX,
 	thetaBashExecutionToText,
-} from "./messages.ts";
-export type { ThetaPackageInfo, ThetaRuntimeTarget } from "./runtime.ts";
+} from "./core/messages.ts";
+export type { ThetaPackageInfo, ThetaRuntimeTarget } from "./core/runtime.ts";
 export type {
 	AppendThetaSessionCompactionEntryOptions,
 	AppendThetaSessionCustomEntryOptions,
@@ -315,11 +318,11 @@ export type {
 	ThetaToolResult,
 	ThetaToolSchema,
 	ThetaToolUpdate,
-} from "./tools.ts";
+} from "./core/tools.ts";
 export type {
 	CreateThetaWorkspaceOptions,
 	ThetaWorkspace,
-} from "./workspace.ts";
+} from "./core/workspace.ts";
 export type {
 	ThetaChatItem,
 	ThetaChatState,
@@ -329,9 +332,9 @@ export type {
 	ThetaProgressState,
 	ThetaSyncState,
 	ThetaToolRenderItem,
-} from "./ui-state.ts";
+} from "./ui/ui-state.ts";
 export type {
 	ExportThetaWorkspaceManifestOptions,
 	ImportThetaWorkspaceManifestOptions,
 	ThetaWorkspaceManifestSnapshot,
-} from "./workspace-sync.ts";
+} from "./sync/workspace-sync.ts";

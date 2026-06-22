@@ -9,7 +9,7 @@ import type {
 	ThetaWorkspaceMutationPayload,
 	ThetaWorkspaceMutationQueue,
 	ThetaWorkspaceMutationRecord,
-} from "./local-storage.ts";
+} from "../local-storage.ts";
 import { syncThetaWorkspaceBlobsToStore } from "./workspace-sync.ts";
 
 export interface ThetaElectricShapeConfig {

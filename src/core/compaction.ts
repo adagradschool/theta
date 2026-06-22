@@ -9,7 +9,7 @@ import type {
 	ThetaSessionEntry,
 	ThetaSessionManager,
 	ThetaSessionRestore,
-} from "./sessions/index.ts";
+} from "../sessions/index.ts";
 
 export interface ThetaCompactionSettings {
 	readonly enabled: boolean;

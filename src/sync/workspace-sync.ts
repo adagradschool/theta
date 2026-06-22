@@ -9,7 +9,7 @@ import type {
 	LocalWorkspaceEntryRecord,
 	LocalWorkspaceFileVersionRecord,
 	PGliteWorkspaceMetadataStore,
-} from "./local-storage.ts";
+} from "../local-storage.ts";
 
 export interface ThetaWorkspaceManifestSnapshot {
 	readonly workspaceId: string;

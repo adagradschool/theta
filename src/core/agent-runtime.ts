@@ -40,7 +40,7 @@ import type {
 } from "./tools.ts";
 import type { ThetaWorkspace } from "./workspace.ts";
 import type { JsonObject } from "./json.ts";
-import { streamThetaProxy } from "./llm-proxy.ts";
+import { streamThetaProxy } from "../llm/llm-proxy.ts";
 
 export type ThetaAgentStreamFunction = StreamFn;
 

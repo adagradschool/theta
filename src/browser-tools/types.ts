@@ -1,5 +1,5 @@
-import type { FileStat } from "../filesystem.ts";
-import type { JsonObject } from "../json.ts";
+import type { FileStat } from "../fs/filesystem.ts";
+import type { JsonObject } from "../core/json.ts";
 
 export type ThetaBrowserToolName =
 	| "bash"

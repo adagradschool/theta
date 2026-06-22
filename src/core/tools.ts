@@ -1,4 +1,4 @@
-import type { WorkspaceFs } from "./filesystem.ts";
+import type { WorkspaceFs } from "../fs/filesystem.ts";
 import type { JsonObject, JsonValue } from "./json.ts";
 import type { ThetaImageContent, ThetaTextContent } from "./messages.ts";
 import type { ThetaWorkspace } from "./workspace.ts";

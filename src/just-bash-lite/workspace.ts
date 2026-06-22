@@ -2,7 +2,7 @@ import {
 	normalizeWorkspacePath,
 	type WorkspaceFs,
 	WorkspaceFsError,
-} from "../filesystem.ts";
+} from "../fs/filesystem.ts";
 import {
 	basenameShellPath,
 	isDescendantShellPath,

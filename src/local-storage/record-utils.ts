@@ -3,8 +3,8 @@ import {
 	dirnameWorkspacePath,
 	type FileStat,
 	normalizeWorkspacePath,
-} from "../filesystem.ts";
-import type { JsonObject, JsonValue } from "../json.ts";
+} from "../fs/filesystem.ts";
+import type { JsonObject, JsonValue } from "../core/json.ts";
 import type {
 	LocalWorkspaceEntryRecord,
 	LocalWorkspaceFileVersionRecord,

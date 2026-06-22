@@ -10,7 +10,7 @@ import {
 	type ToolCall,
 	type Usage,
 } from "@earendil-works/pi-ai/base";
-import type { ThetaLlmProxyConfig } from "./model.ts";
+import type { ThetaLlmProxyConfig } from "../core/model.ts";
 
 export type ThetaProxyStreamEvent =
 	| { readonly type: "start" }

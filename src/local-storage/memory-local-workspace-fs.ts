@@ -1,5 +1,5 @@
-import { createMemoryBlobStorage } from "../blob-sync.ts";
-import type { WorkspaceFs } from "../filesystem.ts";
+import { createMemoryBlobStorage } from "../sync/blob-sync.ts";
+import type { WorkspaceFs } from "../fs/filesystem.ts";
 import { createLocalWorkspaceFs } from "./local-workspace-fs.ts";
 import { createMemoryPGliteWorkspaceMetadataStore } from "./memory-metadata-store.ts";
 import type { CreateMemoryLocalWorkspaceFsOptions } from "./types.ts";

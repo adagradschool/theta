@@ -27,7 +27,7 @@ import {
 	createThetaAgentRuntime,
 	type CreateThetaAgentRuntimeOptions,
 } from "./agent-runtime.ts";
-import type { ThetaSessionManager } from "./sessions/index.ts";
+import type { ThetaSessionManager } from "../sessions/index.ts";
 
 export type ThetaQueueMode = "all" | "one-at-a-time";
 
@@ -137,6 +137,8 @@ export interface ThetaAgent {
 	setModel(model: ThetaModelRef): void;
 	setThinkingLevel(thinkingLevel: ThetaThinkingLevel): void;
 	setTools(tools: readonly ThetaToolDefinition[]): void;
+	restoreSession(): Promise<void>;
+	clearSession(): Promise<void>;
 	abort(): void;
 	waitForIdle(): Promise<void>;
 	reset(): void;
@@ -299,6 +301,48 @@ class ThetaAgentController implements ThetaAgent {
 		this.stateValue.tools = tools.slice();
 	}
 
+	async restoreSession(): Promise<void> {
+		const session = this.sessionOptions;
+		if (!session) {
+			return;
+		}
+		const restored = await session.manager.restore(
+			session.sessionId,
+			session.branchId,
+		);
+		if (!restored) {
+			return;
+		}
+		this.stateValue.messages = restored.messages.slice();
+		this.persistedMessageCount = this.stateValue.messages.length;
+		this.stateValue.errorMessage = undefined;
+		this.stateValue.streamingMessage = undefined;
+		this.stateValue.pendingToolCalls = new Set<string>();
+	}
+
+	async clearSession(): Promise<void> {
+		this.assertUsable();
+		if (this.activeRun) {
+			throw new Error("Theta agent is already running.");
+		}
+		const session = this.sessionOptions;
+		this.resetState();
+		await this.emit({
+			type: "agent_reset",
+			agentId: this.id,
+			workspaceId: this.workspace.id,
+		});
+		if (!session) {
+			return;
+		}
+		await session.manager.deleteSession(session.sessionId);
+		await session.manager.createSession({
+			id: session.sessionId,
+			workspaceId: this.workspace.id,
+			title: "Theta Session",
+		});
+	}
+
 	abort(): void {
 		this.activeRun?.abortController.abort();
 	}
@@ -308,11 +352,21 @@ class ThetaAgentController implements ThetaAgent {
 	}
 
 	reset(): void {
+		this.resetState();
+		void this.emitter.emit({
+			type: "agent_reset",
+			agentId: this.id,
+			workspaceId: this.workspace.id,
+		});
+	}
+
+	private resetState(): void {
 		this.stateValue.messages = [];
 		this.stateValue.isStreaming = false;
 		this.stateValue.streamingMessage = undefined;
 		this.stateValue.pendingToolCalls = new Set<string>();
 		this.stateValue.errorMessage = undefined;
+		this.persistedMessageCount = 0;
 		this.clearAllQueues();
 	}
 

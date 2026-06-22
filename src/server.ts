@@ -3,7 +3,10 @@ import {
 	registerBuiltInApiProviders,
 	streamSimple,
 } from "@earendil-works/pi-ai";
-import type { ThetaProxyRequest, ThetaProxyStreamEvent } from "./llm-proxy.ts";
+import type {
+	ThetaProxyRequest,
+	ThetaProxyStreamEvent,
+} from "./llm/llm-proxy.ts";
 
 export interface ThetaServerProxyRequirements {
 	readonly providerCredentials: "server-only";

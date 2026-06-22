@@ -1,6 +1,6 @@
-import type { BlobCache, ContentHash } from "../blob-sync.ts";
-import type { WorkspaceFs } from "../filesystem.ts";
-import type { JsonObject } from "../json.ts";
+import type { BlobCache, ContentHash } from "../sync/blob-sync.ts";
+import type { WorkspaceFs } from "../fs/filesystem.ts";
+import type { JsonObject } from "../core/json.ts";
 
 export interface ThetaStorageMigration {
 	readonly version: number;

@@ -1,0 +1,21 @@
+{
+	"name": "donedone-client-example",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vite --host 127.0.0.1 --port 4180",
+		"build": "tsc --noEmit && vite build",
+		"smoke": "node smoke.mjs"
+	},
+	"dependencies": {
+		"@electric-sql/pglite": "0.5.3",
+		"react": "^19.2.7",
+		"react-dom": "^19.2.7"
+	},
+	"devDependencies": {
+		"@vitejs/plugin-react": "^5.1.1",
+		"playwright": "1.61.0",
+		"typescript": "5.9.3",
+		"vite": "^7.2.7"
+	}
+}

@@ -1,11 +1,11 @@
-import type { FsEvent } from "./filesystem.ts";
+import type { FsEvent } from "../fs/filesystem.ts";
 import type { JsonObject } from "./json.ts";
 import type {
 	ThetaAssistantMessage,
 	ThetaMessage,
 	ThetaToolResultMessage,
 } from "./messages.ts";
-import type { ThetaSessionCompactionEntry } from "./sessions/index.ts";
+import type { ThetaSessionCompactionEntry } from "../sessions/index.ts";
 import type { ThetaToolResult } from "./tools.ts";
 
 export interface ThetaWorkspaceSnapshot {
@@ -78,6 +78,11 @@ export type ThetaAgentEvent =
 			readonly agentId: string;
 			readonly workspaceId: string;
 			readonly messages: readonly ThetaMessage[];
+	  }
+	| {
+			readonly type: "agent_reset";
+			readonly agentId: string;
+			readonly workspaceId: string;
 	  }
 	| {
 			readonly type: "turn_start";

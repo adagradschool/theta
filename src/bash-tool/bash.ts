@@ -1,7 +1,7 @@
-import type { WorkspaceFs } from "../filesystem.ts";
-import { normalizeWorkspacePath } from "../filesystem.ts";
+import type { WorkspaceFs } from "../fs/filesystem.ts";
+import { normalizeWorkspacePath } from "../fs/filesystem.ts";
 import { createJustBashLite } from "../just-bash-lite/index.ts";
-import type { ThetaToolDefinition, ThetaToolFactory } from "../tools.ts";
+import type { ThetaToolDefinition, ThetaToolFactory } from "../core/tools.ts";
 import { thetaBashToolSchema } from "./schemas.ts";
 import { truncateTextByBytes } from "./truncate.ts";
 import type {

@@ -2,7 +2,7 @@ import {
 	WorkspaceAlreadyExistsError,
 	WorkspaceStaleWriteError,
 	normalizeWorkspacePath,
-} from "../filesystem.ts";
+} from "../fs/filesystem.ts";
 import { THETA_LOCAL_STORAGE_SCHEMA_VERSION } from "./constants.ts";
 import {
 	cloneEntry,

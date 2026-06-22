@@ -4,20 +4,20 @@ import {
 	type FileStat,
 	type FsEvent,
 	normalizeWorkspacePath,
-} from "./filesystem.ts";
-import type { JsonValue } from "./json.ts";
+} from "../fs/filesystem.ts";
+import type { JsonValue } from "../core/json.ts";
 import type {
 	ThetaAgentEvent,
 	ThetaSyncStatus,
 	ThetaWorkspaceEvent,
-} from "./events.ts";
+} from "../core/events.ts";
 import type {
 	ThetaAssistantMessage,
 	ThetaMessage,
 	ThetaTextContent,
 	ThetaToolCallContent,
-} from "./messages.ts";
-import type { ThetaToolResult } from "./tools.ts";
+} from "../core/messages.ts";
+import type { ThetaToolResult } from "../core/tools.ts";
 
 export interface ThetaChatItem {
 	readonly id: string;
@@ -96,6 +96,9 @@ export function createThetaChatState(
 	return {
 		items: messages
 			.concat(options.streamingMessage ? [options.streamingMessage] : [])
+			.filter(
+				(message) => message.role !== "custom" || message.display !== false,
+			)
 			.map((message, index) =>
 				toChatItem(message, index, options.streamingMessage),
 			),

@@ -1,4 +1,4 @@
-import type { WorkspaceFs } from "../filesystem.ts";
+import type { WorkspaceFs } from "../fs/filesystem.ts";
 
 export interface JustBashLiteOptions {
 	readonly fs: WorkspaceFs;

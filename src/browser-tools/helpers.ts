@@ -9,9 +9,12 @@ import {
 	WorkspaceFsError,
 	WorkspaceNotFoundError,
 	type WriteOptions,
-} from "../filesystem.ts";
-import type { ThetaTextContent } from "../messages.ts";
-import type { ThetaToolRenderMetadata, ThetaToolResult } from "../tools.ts";
+} from "../fs/filesystem.ts";
+import type { ThetaTextContent } from "../core/messages.ts";
+import type {
+	ThetaToolRenderMetadata,
+	ThetaToolResult,
+} from "../core/tools.ts";
 
 export interface WorkspaceWalkEntry {
 	readonly path: string;

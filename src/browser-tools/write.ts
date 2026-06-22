@@ -1,6 +1,6 @@
-import { normalizeWorkspacePath } from "../filesystem.ts";
-import type { WorkspaceFs } from "../filesystem.ts";
-import type { ThetaToolDefinition, ThetaToolFactory } from "../tools.ts";
+import { normalizeWorkspacePath } from "../fs/filesystem.ts";
+import type { WorkspaceFs } from "../fs/filesystem.ts";
+import type { ThetaToolDefinition, ThetaToolFactory } from "../core/tools.ts";
 import {
 	assertNotAborted,
 	countBytes,

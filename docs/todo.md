@@ -213,6 +213,8 @@ Status: implemented with framework-free headless helpers for chat state, file tr
 
 ## 17. Example App
 
+Status: local-only GTD client example added under `examples/gtd-client`, inspired by `adagradschool/cc-gtd`. It wires a client-side BYOK OpenAI runtime, PGlite metadata in an OPFS-backed worker, OPFS content-addressed blobs, browser tools, browser-local bash with a `date` custom command, file tree, editor, chat panel, tool timeline, and a reload persistence smoke. Blob sync and Electric sync remain for a later pass after this local flow.
+
 1. Create a minimal example app.
 2. Wire the browser agent.
 3. Wire the PGlite/OPFS-backed workspace filesystem.

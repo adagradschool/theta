@@ -5,7 +5,7 @@ import {
 } from "./agent.ts";
 import { ThetaEmitter } from "./emitter.ts";
 import type { ThetaEventListener, ThetaWorkspaceEvent } from "./events.ts";
-import type { WorkspaceFs } from "./filesystem.ts";
+import type { WorkspaceFs } from "../fs/filesystem.ts";
 import type { JsonObject } from "./json.ts";
 import type { ThetaToolDefinition, ThetaToolInput } from "./tools.ts";
 

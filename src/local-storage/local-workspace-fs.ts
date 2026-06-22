@@ -1,4 +1,4 @@
-import type { BlobCache } from "../blob-sync.ts";
+import type { BlobCache } from "../sync/blob-sync.ts";
 import {
 	decodeWorkspaceText,
 	dirnameWorkspacePath,
@@ -15,7 +15,7 @@ import {
 	WorkspaceStaleWriteError,
 	normalizeWorkspacePath,
 	type WriteOptions,
-} from "../filesystem.ts";
+} from "../fs/filesystem.ts";
 import { THETA_LOCAL_STORAGE_SCHEMA_VERSION } from "./constants.ts";
 import {
 	isDescendantPath,

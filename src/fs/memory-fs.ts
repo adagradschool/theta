@@ -16,7 +16,7 @@ import {
 	normalizeWorkspacePath,
 	type WriteOptions,
 } from "./filesystem.ts";
-import type { JsonObject } from "./json.ts";
+import type { JsonObject } from "../core/json.ts";
 
 interface MemoryDirectoryEntry {
 	readonly kind: "directory";

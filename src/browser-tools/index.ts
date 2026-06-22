@@ -2,7 +2,7 @@ import {
 	createThetaBashTool,
 	createThetaBashToolDefinition,
 } from "../bash-tool/index.ts";
-import type { ThetaToolDefinition, ThetaToolFactory } from "../tools.ts";
+import type { ThetaToolDefinition, ThetaToolFactory } from "../core/tools.ts";
 import { createThetaEditTool, createThetaEditToolDefinition } from "./edit.ts";
 import { createThetaFindTool, createThetaFindToolDefinition } from "./find.ts";
 import { createThetaGrepTool, createThetaGrepToolDefinition } from "./grep.ts";
